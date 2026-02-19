@@ -1,0 +1,25 @@
+<!-- Open this in a browser to generate PNG icons, or just use the SVG favicon -->
+<canvas id="c" width="512" height="512"></canvas>
+<script>
+const c = document.getElementById('c');
+const ctx = c.getContext('2d');
+// Background
+ctx.fillStyle = '#0A0A0A';
+ctx.fillRect(0, 0, 512, 512);
+// Crescent
+ctx.beginPath();
+ctx.arc(256, 256, 160, 0, Math.PI * 2);
+ctx.fillStyle = '#F59E0B';
+ctx.fill();
+ctx.beginPath();
+ctx.arc(300, 230, 140, 0, Math.PI * 2);
+ctx.fillStyle = '#0A0A0A';
+ctx.fill();
+// Download links
+document.body.innerHTML += '<br><a download="icon-512.png" href="' + c.toDataURL() + '">Download 512</a>';
+c.width = 192; c.height = 192;
+ctx.fillStyle = '#0A0A0A'; ctx.fillRect(0, 0, 192, 192);
+ctx.beginPath(); ctx.arc(96, 96, 60, 0, Math.PI * 2); ctx.fillStyle = '#F59E0B'; ctx.fill();
+ctx.beginPath(); ctx.arc(113, 86, 52, 0, Math.PI * 2); ctx.fillStyle = '#0A0A0A'; ctx.fill();
+document.body.innerHTML += '<br><a download="icon-192.png" href="' + c.toDataURL() + '">Download 192</a>';
+</script>

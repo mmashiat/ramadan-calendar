@@ -1,0 +1,22 @@
+{
+  "name": "Ramadan Calendar 1447",
+  "short_name": "Ramadan",
+  "description": "Track your Ramadan fasting with a beautiful sun-cycle visualization",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0A0A0A",
+  "theme_color": "#0A0A0A",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
