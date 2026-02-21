@@ -24,11 +24,12 @@ function App() {
   const sunProgress = useSunCycle(todayTimes);
 
   return (
-    <div className="relative z-10 w-full max-w-[380px] mx-auto px-4 py-8">
+    <div className="relative z-10 w-full max-w-[400px] mx-auto px-5 py-6 min-h-full flex flex-col justify-center">
       <SkyCard sunProgress={sunProgress}>
         <Header
           locationError={!needsPermission ? locError : null}
           todayPrayerTimes={todayTimes}
+          sunProgress={sunProgress}
         />
 
         {needsPermission ? (
