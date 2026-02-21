@@ -11,6 +11,7 @@ import { RamadanGrid } from './components/RamadanGrid';
 import { EidCountdown } from './components/EidCountdown';
 import { CelebrationOverlay } from './components/CelebrationOverlay';
 import { LocationPrompt } from './components/LocationPrompt';
+import { InstallPrompt } from './components/InstallPrompt';
 
 function App() {
   const { lat, lng, loading: locLoading, error: locError, needsPermission, requestLocation, resetLocation } = useLocation();
@@ -92,6 +93,8 @@ function App() {
           onDismiss={() => {}}
         />
       </SkyCard>
+
+      <InstallPrompt />
     </div>
   );
 }
