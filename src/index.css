@@ -9,7 +9,7 @@
 html, body, #root {
   height: 100%;
   width: 100%;
-  background: transparent;
+  background-color: #050510;
   color: #ffffff;
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;

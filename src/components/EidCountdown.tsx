@@ -20,7 +20,7 @@ export function EidCountdown() {
 
   if (daysLeft === 0) {
     return (
-      <div className="text-center mt-4 pt-3 border-t border-white/[0.06]">
+      <div className="text-center mt-5 pt-4 border-t border-white/[0.08]">
         <p className="text-[13px] font-medium tracking-wide bg-gradient-to-r from-amber-300 to-amber-500 bg-clip-text text-transparent">
           Eid Mubarak
         </p>
@@ -29,7 +29,7 @@ export function EidCountdown() {
   }
 
   return (
-    <div className="flex items-center justify-center gap-2 mt-4 pt-3 border-t border-white/[0.06]">
+    <div className="flex items-center justify-center gap-2.5 mt-5 pt-4 border-t border-white/[0.08]">
       <span className="text-[28px] font-extralight tracking-tight bg-gradient-to-b from-white/70 to-white/30 bg-clip-text text-transparent tabular-nums leading-none">
         {daysLeft}
       </span>

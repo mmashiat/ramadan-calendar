@@ -34,6 +34,7 @@ const PRAYER_CACHE_KEY = 'ramadan-prayer-times-1447';
 
 export interface DayPrayerTimes {
   fajr: string;
+  imsak: string;
   sunrise: string;
   dhuhr: string;
   asr: string;

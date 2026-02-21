@@ -15,8 +15,8 @@ export function Header({ locationError, todayPrayerTimes }: HeaderProps) {
   });
 
   return (
-    <div className="text-center mb-4">
-      <h1 className="text-[15px] font-medium text-white/85 tracking-wide">
+    <div className="text-center mb-6">
+      <h1 className="text-[16px] font-medium text-white/90 tracking-wide">
         {dateStr}
       </h1>
       <p className="text-[10px] text-white/30 mt-0.5 tracking-[0.2em] uppercase">
@@ -24,15 +24,17 @@ export function Header({ locationError, todayPrayerTimes }: HeaderProps) {
       </p>
 
       {todayPrayerTimes && (
-        <div className="flex justify-center items-center gap-6 mt-3 pt-3 border-t border-white/[0.06]">
+        <div className="flex justify-center items-center gap-5 mt-4 pt-4 border-t border-white/[0.08]">
+          <TimeDisplay label="Imsak" time={todayPrayerTimes.imsak} />
+          <div className="w-px h-8 bg-white/[0.08]" />
           <TimeDisplay label="Suhoor" time={todayPrayerTimes.fajr} />
-          <div className="w-px h-8 bg-white/[0.06]" />
+          <div className="w-px h-8 bg-white/[0.08]" />
           <TimeDisplay label="Iftar" time={todayPrayerTimes.maghrib} />
         </div>
       )}
 
       {locationError && (
-        <p className="text-[8px] text-amber-500/40 mt-1">{locationError}</p>
+        <p className="text-[8px] text-amber-500/40 mt-2">{locationError}</p>
       )}
     </div>
   );

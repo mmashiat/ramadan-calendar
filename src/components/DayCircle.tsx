@@ -50,10 +50,13 @@ export function DayCircle({
   }, [isToday, isPast, isFuture, fastingStatus, sunProgress, isInStreak, streakLength]);
 
   const shouldPulse = isToday && sunProgress === 2 && !fastingStatus;
-  const isInteractive = (isToday && (sunProgress === 2 || sunProgress === 3) && !fastingStatus)
-    || (isPast && !fastingStatus);
 
-  // Build box-shadow: streak glow is wider to create visual connection between adjacent circles
+  // Allow tapping: any past day or today (post-maghrib/late night) — including already logged days
+  const isInteractive = !isFuture && (
+    isPast ||
+    (isToday && (sunProgress === 2 || sunProgress === 3))
+  );
+
   const boxShadow = useMemo(() => {
     if (isInStreak && fastingStatus === 'fasted') {
       return `0 0 8px rgba(16, 185, 129, 0.4), 0 0 20px rgba(16, 185, 129, 0.15), 0 0 30px rgba(16, 185, 129, 0.08)`;
@@ -70,7 +73,7 @@ export function DayCircle({
         onClick={isInteractive ? onTap : undefined}
         className={`
           relative flex items-center justify-center
-          w-[32px] h-[32px] rounded-full
+          w-[36px] h-[36px] rounded-full
           transition-all duration-700 ease-out
           ${isInteractive ? 'cursor-pointer active:scale-90' : 'cursor-default'}
           ${shouldPulse ? 'animate-pulse-glow' : ''}
@@ -89,15 +92,15 @@ export function DayCircle({
       >
         <span
           className={`
-            text-[9px] font-medium leading-none
-            ${isFuture ? 'text-white/[0.12]' : ''}
+            text-[10px] font-medium leading-none
+            ${isFuture ? 'text-white/[0.15]' : ''}
             ${isToday && sunProgress >= 0 && sunProgress <= 0.4 ? 'text-black/40' : ''}
             ${isToday && sunProgress > 0.4 && sunProgress <= 1 ? 'text-white/50' : ''}
             ${isToday && sunProgress === 2 ? 'text-white/50' : ''}
             ${isToday && (sunProgress === -1 || sunProgress === 3) ? 'text-white/25' : ''}
-            ${isPast && fastingStatus ? 'text-white/60' : ''}
-            ${isPast && !fastingStatus ? 'text-white/15' : ''}
-            ${fastingStatus ? 'text-white/60' : ''}
+            ${isPast && fastingStatus ? 'text-white/70' : ''}
+            ${isPast && !fastingStatus ? 'text-white/20' : ''}
+            ${fastingStatus ? 'text-white/70' : ''}
           `}
         >
           {day}
@@ -105,7 +108,7 @@ export function DayCircle({
       </button>
 
       {shouldPulse && (
-        <span className="text-[6px] text-amber-400/50 tracking-wider animate-fade-in">
+        <span className="text-[7px] text-amber-400/50 tracking-wider animate-fade-in">
           tap
         </span>
       )}

@@ -78,6 +78,7 @@ export function usePrayerTimes(lat: number, lng: number, locationReady: boolean)
             const t = apiDay.timings;
             times[day] = {
               fajr: cleanTime(t.Fajr),
+              imsak: cleanTime(t.Imsak),
               sunrise: cleanTime(t.Sunrise),
               dhuhr: cleanTime(t.Dhuhr),
               asr: cleanTime(t.Asr),

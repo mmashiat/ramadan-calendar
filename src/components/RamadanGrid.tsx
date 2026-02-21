@@ -33,7 +33,6 @@ function computeStreaks(log: Record<number, FastingStatus>) {
     }
   }
 
-  // Find the active streak (one that includes the most recent fasted day)
   let activeStreak = 0;
   for (let d = RAMADAN_DAYS; d >= 1; d--) {
     if (log[d] === 'fasted') {
@@ -104,41 +103,42 @@ export function RamadanGrid({ sunProgress }: RamadanGridProps) {
 
   return (
     <>
-      <div className="grid grid-cols-6 gap-[10px] place-items-center">
+      <div className="grid grid-cols-6 gap-3 place-items-center px-1">
         {days}
       </div>
 
-      <div className="flex justify-center items-center gap-4 mt-3.5 pt-3 border-t border-white/[0.06]">
+      <div className="flex justify-center items-center gap-4 mt-5 pt-4 border-t border-white/[0.08]">
         {fastedCount > 0 && (
-          <div className="flex items-center gap-1">
-            <div className="w-[5px] h-[5px] rounded-full bg-emerald-500/80" />
-            <span className="text-[9px] text-white/25 tabular-nums">{fastedCount}</span>
+          <div className="flex items-center gap-1.5">
+            <div className="w-[6px] h-[6px] rounded-full bg-emerald-500/80" />
+            <span className="text-[10px] text-white/30 tabular-nums">{fastedCount}</span>
           </div>
         )}
         {missedCount > 0 && (
-          <div className="flex items-center gap-1">
-            <div className="w-[5px] h-[5px] rounded-full bg-red-500/80" />
-            <span className="text-[9px] text-white/25 tabular-nums">{missedCount}</span>
+          <div className="flex items-center gap-1.5">
+            <div className="w-[6px] h-[6px] rounded-full bg-red-500/80" />
+            <span className="text-[10px] text-white/30 tabular-nums">{missedCount}</span>
           </div>
         )}
         {activeStreak >= 2 && (
-          <div className="flex items-center gap-1">
-            <span className="text-[9px] text-emerald-400/50 leading-none">
-              <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor">
+          <div className="flex items-center gap-1.5">
+            <span className="text-emerald-400/50 leading-none">
+              <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor">
                 <path d="M8 1c-1.5 3-4 4-4 8a4 4 0 0 0 8 0c0-4-2.5-5-4-8z" />
               </svg>
             </span>
-            <span className="text-[9px] text-white/25 tabular-nums">{activeStreak} streak</span>
+            <span className="text-[10px] text-white/30 tabular-nums">{activeStreak} streak</span>
           </div>
         )}
         {fastedCount === 0 && missedCount === 0 && (
-          <span className="text-[9px] text-white/15">Day {Math.min(today, 30)} of 30</span>
+          <span className="text-[10px] text-white/20">Day {Math.min(today, 30)} of 30</span>
         )}
       </div>
 
       {promptDay !== null && (
         <FastingPrompt
           day={promptDay}
+          currentStatus={fastingLog[promptDay]}
           onRecord={handleRecord}
           onClose={handleClose}
         />
