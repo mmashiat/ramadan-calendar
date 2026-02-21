@@ -17,6 +17,12 @@ function getDaysUntilEid(): number {
   return Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
 }
 
+function timeToMinutes(timeStr: string): number {
+  const clean = timeStr.replace(/\s*\(.*\)/, '').trim();
+  const [h, m] = clean.split(':').map(Number);
+  return h * 60 + m;
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const lat = parseFloat(req.query.lat as string) || 40.7128;
   const lng = parseFloat(req.query.lng as string) || -74.006;
@@ -32,14 +38,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const data = await response.json();
     const timings = data.data.timings;
 
-    res.setHeader('Cache-Control', 's-maxage=1800, stale-while-revalidate');
+    const imsakStr = timings.Imsak?.replace(/\s*\(.*\)/, '') || '';
+    const fajrStr = timings.Fajr?.replace(/\s*\(.*\)/, '') || '';
+    const maghribStr = timings.Maghrib?.replace(/\s*\(.*\)/, '') || '';
+
+    // Compute day progress (0-1 over 24h)
+    const nowMin = today.getHours() * 60 + today.getMinutes();
+    const dayProgress = nowMin / 1440;
+    const fajrFraction = timeToMinutes(fajrStr) / 1440;
+    const maghribFraction = timeToMinutes(maghribStr) / 1440;
+    const imsakFraction = timeToMinutes(imsakStr) / 1440;
+
+    res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate');
     res.json({
       ramadanDay: getRamadanDay(),
       totalDays: RAMADAN_DAYS,
       daysUntilEid: getDaysUntilEid(),
-      imsak: timings.Imsak?.replace(/\s*\(.*\)/, '') || '',
-      fajr: timings.Fajr?.replace(/\s*\(.*\)/, '') || '',
-      maghrib: timings.Maghrib?.replace(/\s*\(.*\)/, '') || '',
+      imsak: imsakStr,
+      fajr: fajrStr,
+      maghrib: maghribStr,
+      dayProgress,
+      fajrFraction,
+      maghribFraction,
+      imsakFraction,
     });
   } catch {
     res.status(500).json({ error: 'Failed to fetch prayer times' });

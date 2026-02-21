@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ramadan Widget - Install</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
+      background: #050510;
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .card {
+      max-width: 380px;
+      width: 100%;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 32px 28px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    h1 {
+      font-size: 22px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .subtitle {
+      font-size: 12px;
+      color: rgba(255,255,255,0.35);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+    }
+    .step {
+      display: flex;
+      gap: 14px;
+      margin-bottom: 20px;
+      align-items: flex-start;
+    }
+    .step-num {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.5);
+    }
+    .step-text {
+      font-size: 14px;
+      color: rgba(255,255,255,0.7);
+      line-height: 1.5;
+      padding-top: 3px;
+    }
+    .step-text a {
+      color: #60a5fa;
+      text-decoration: none;
+    }
+    .step-text strong {
+      color: rgba(255,255,255,0.9);
+    }
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      margin-top: 28px;
+      transition: opacity 0.2s;
+    }
+    .btn:active { opacity: 0.7; }
+    .btn-primary {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: white;
+    }
+    .btn-secondary {
+      background: rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.6);
+      margin-top: 12px;
+      font-size: 13px;
+    }
+    .note {
+      font-size: 11px;
+      color: rgba(255,255,255,0.2);
+      text-align: center;
+      margin-top: 20px;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Ramadan Widget</h1>
+    <p class="subtitle">Home Screen Widget for iPhone</p>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-text">
+        Install the free <a href="https://apps.apple.com/app/scriptable/id1405459188" target="_blank">Scriptable</a> app from the App Store
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-text">
+        Tap the button below to <strong>add the widget script</strong> to Scriptable
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-text">
+        Long press your home screen → <strong>+</strong> → search <strong>Scriptable</strong> → add <strong>Medium</strong> widget
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-text">
+        Long press the widget → <strong>Edit Widget</strong> → set Script to <strong>"Ramadan"</strong>
+      </div>
+    </div>
+
+    <a
+      class="btn btn-primary"
+      id="install-btn"
+      href="#"
+    >
+      Add Widget to Scriptable
+    </a>
+
+    <a
+      class="btn btn-secondary"
+      href="https://ramadan-calendar-ecru.vercel.app/ramadan-widget.js"
+      target="_blank"
+    >
+      Or copy script manually
+    </a>
+
+    <p class="note">
+      Requires iOS 14+ and the free Scriptable app.<br>
+      Widget shows prayer times, sun arc, and Eid countdown.
+    </p>
+  </div>
+
+  <script>
+    // Scriptable deep link to auto-add the script
+    const scriptURL = 'https://ramadan-calendar-ecru.vercel.app/ramadan-widget.js';
+    const encodedURL = encodeURIComponent(scriptURL);
+    const deepLink = `scriptable:///add?scriptName=Ramadan&url=${encodedURL}`;
+
+    document.getElementById('install-btn').href = deepLink;
+  </script>
+</body>
+</html>
