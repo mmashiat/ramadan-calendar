@@ -98,7 +98,7 @@ export function RamadanGrid({ dayCycle }: RamadanGridProps) {
 
   return (
     <>
-      <div className="grid grid-cols-6 gap-x-2 gap-y-3 place-items-center px-0">
+      <div className="grid grid-cols-[repeat(6,36px)] gap-3 justify-center place-items-center">
         {days}
       </div>
 
