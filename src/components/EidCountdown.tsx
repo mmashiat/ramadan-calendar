@@ -29,18 +29,10 @@ export function EidCountdown() {
   }
 
   return (
-    <div className="flex items-center justify-center gap-2.5 mt-5 pt-4 border-t border-white/[0.08]">
-      <span className="text-[28px] font-extralight tracking-tight bg-gradient-to-b from-white/70 to-white/30 bg-clip-text text-transparent tabular-nums leading-none">
-        {daysLeft}
+    <div className="flex items-center justify-center gap-2 mt-8 pt-4 border-t border-white/[0.06]">
+      <span className="text-[9px] text-white/20 tracking-[0.2em] uppercase leading-none">
+        {daysLeft} {daysLeft === 1 ? 'day' : 'days'} until Eid
       </span>
-      <div className="flex flex-col gap-px">
-        <span className="text-[8px] text-white/30 tracking-[0.2em] uppercase leading-none">
-          {daysLeft === 1 ? 'day' : 'days'}
-        </span>
-        <span className="text-[8px] text-white/15 tracking-[0.12em] uppercase leading-none">
-          until Eid
-        </span>
-      </div>
     </div>
   );
 }

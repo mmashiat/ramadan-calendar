@@ -132,8 +132,8 @@ export const FUTURE_COLORS: SunColors = {
 };
 
 export const NIGHT_COLORS: SunColors = {
-  inner: 'rgb(26, 26, 26)',
-  outer: 'rgb(51, 51, 51)',
+  inner: 'rgb(40, 40, 50)',
+  outer: 'rgb(60, 60, 70)',
   glow: 'transparent',
   glowIntensity: 0,
 };

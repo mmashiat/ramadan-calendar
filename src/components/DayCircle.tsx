@@ -88,8 +88,8 @@ export function DayCircle({
             colors.inner === 'transparent'
               ? 'transparent'
               : `radial-gradient(circle at 38% 38%, ${colors.inner}, ${colors.outer})`,
-          border: isFuture || colors.inner === 'rgb(26, 26, 26)'
-            ? '1px solid rgba(255,255,255,0.08)'
+          border: isFuture || colors.inner === 'rgb(40, 40, 50)'
+            ? '1px solid rgba(255,255,255,0.15)'
             : '1px solid transparent',
           boxShadow,
         }}
@@ -98,13 +98,13 @@ export function DayCircle({
         <span
           className={`
             text-[10px] font-medium leading-none
-            ${isFuture ? 'text-white/[0.15]' : ''}
+            ${isFuture ? 'text-white/25' : ''}
             ${isToday && sunProgress >= 0 && sunProgress <= 0.4 ? 'text-black/40' : ''}
             ${isToday && sunProgress > 0.4 && sunProgress <= 1 ? 'text-white/50' : ''}
             ${isToday && sunProgress === 2 ? 'text-white/50' : ''}
             ${isToday && (sunProgress === -1 || sunProgress === 3) ? 'text-white/25' : ''}
             ${isPast && fastingStatus ? 'text-white/70' : ''}
-            ${isPast && !fastingStatus ? 'text-white/20' : ''}
+            ${isPast && !fastingStatus ? 'text-white/35' : ''}
             ${fastingStatus ? 'text-white/70' : ''}
           `}
         >
