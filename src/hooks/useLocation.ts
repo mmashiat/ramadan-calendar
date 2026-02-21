@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { getCachedLocation, cacheLocation } from '../lib/storage';
+import { getCachedLocation, cacheLocation, clearCachedLocation } from '../lib/storage';
 
 interface LocationState {
   lat: number;
@@ -9,7 +9,7 @@ interface LocationState {
   needsPermission: boolean;
 }
 
-export function useLocation(): LocationState & { requestLocation: () => void } {
+export function useLocation(): LocationState & { requestLocation: () => void; resetLocation: () => void } {
   const [state, setState] = useState<LocationState>(() => {
     const cached = getCachedLocation();
     if (cached) {
@@ -57,5 +57,10 @@ export function useLocation(): LocationState & { requestLocation: () => void } {
     );
   }, []);
 
-  return { ...state, requestLocation };
+  const resetLocation = useCallback(() => {
+    clearCachedLocation();
+    requestLocation();
+  }, [requestLocation]);
+
+  return { ...state, requestLocation, resetLocation };
 }

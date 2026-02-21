@@ -70,3 +70,7 @@ export function getCachedLocation(): { lat: number; lng: number } | null {
 export function cacheLocation(lat: number, lng: number): void {
   localStorage.setItem(LOCATION_KEY, JSON.stringify({ lat, lng }));
 }
+
+export function clearCachedLocation(): void {
+  localStorage.removeItem(LOCATION_KEY);
+}

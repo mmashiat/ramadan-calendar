@@ -1,7 +1,11 @@
 import { useState, useEffect } from 'react';
 import { getDaysUntilEid } from '../lib/ramadan';
 
-export function EidCountdown() {
+interface EidCountdownProps {
+  onChangeLocation?: () => void;
+}
+
+export function EidCountdown({ onChangeLocation }: EidCountdownProps) {
   const [daysLeft, setDaysLeft] = useState(getDaysUntilEid);
 
   useEffect(() => {
@@ -29,10 +33,19 @@ export function EidCountdown() {
   }
 
   return (
-    <div className="flex items-center justify-center" style={{ marginTop: '32px' }}>
+    <div className="flex flex-col items-center" style={{ marginTop: '32px' }}>
       <span className="text-[13px] font-semibold text-white/40 tracking-[0.25em] uppercase leading-none">
         {daysLeft} {daysLeft === 1 ? 'day' : 'days'} until Eid
       </span>
+
+      {onChangeLocation && (
+        <button
+          onClick={onChangeLocation}
+          className="mt-4 text-[10px] text-white/20 tracking-[0.1em] hover:text-white/40 transition-colors"
+        >
+          Change Location
+        </button>
+      )}
     </div>
   );
 }

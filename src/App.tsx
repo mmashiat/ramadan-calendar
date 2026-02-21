@@ -11,7 +11,7 @@ import { EidCountdown } from './components/EidCountdown';
 import { LocationPrompt } from './components/LocationPrompt';
 
 function App() {
-  const { lat, lng, loading: locLoading, error: locError, needsPermission, requestLocation } = useLocation();
+  const { lat, lng, loading: locLoading, error: locError, needsPermission, requestLocation, resetLocation } = useLocation();
   const { times, loading: timesLoading, error: timesError } = usePrayerTimes(
     lat,
     lng,
@@ -78,7 +78,7 @@ function App() {
               />
             )}
             <RamadanGrid dayCycle={dayCycle} />
-            <EidCountdown />
+            <EidCountdown onChangeLocation={resetLocation} />
           </>
         )}
       </SkyCard>
