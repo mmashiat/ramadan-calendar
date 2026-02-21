@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
 import { RAMADAN_DAYS, getRamadanDay } from '../lib/ramadan';
 import { getFastingStatus, setFastingStatus, type FastingStatus } from '../lib/storage';
 import { DayCircle } from './DayCircle';
@@ -7,6 +7,7 @@ import type { DayCycleInfo } from '../hooks/useSunCycle';
 
 interface RamadanGridProps {
   dayCycle: DayCycleInfo;
+  onCelebrate?: () => void;
 }
 
 function computeStreaks(log: Record<number, FastingStatus>) {
@@ -37,14 +38,30 @@ function computeStreaks(log: Record<number, FastingStatus>) {
   return { streaks };
 }
 
-export function RamadanGrid({ dayCycle }: RamadanGridProps) {
+function getMaxStreak(log: Record<number, FastingStatus>): number {
+  let max = 0;
+  let current = 0;
+  for (let d = 1; d <= RAMADAN_DAYS; d++) {
+    if (log[d] === 'fasted') {
+      current++;
+      if (current > max) max = current;
+    } else {
+      current = 0;
+    }
+  }
+  return max;
+}
+
+export function RamadanGrid({ dayCycle, onCelebrate }: RamadanGridProps) {
   const today = getRamadanDay(new Date());
+  const prevMaxStreakRef = useRef<number>(0);
 
   const [fastingLog, setFastingLog] = useState<Record<number, FastingStatus>>(() => {
     const log: Record<number, FastingStatus> = {};
     for (let d = 1; d <= RAMADAN_DAYS; d++) {
       log[d] = getFastingStatus(d);
     }
+    prevMaxStreakRef.current = getMaxStreak(log);
     return log;
   });
 
@@ -57,9 +74,23 @@ export function RamadanGrid({ dayCycle }: RamadanGridProps) {
   const handleRecord = useCallback((status: 'fasted' | 'missed') => {
     if (promptDay === null) return;
     setFastingStatus(promptDay, status);
-    setFastingLog(prev => ({ ...prev, [promptDay]: status }));
+    setFastingLog(prev => {
+      const next = { ...prev, [promptDay]: status };
+
+      // Check if a streak just hit 7
+      if (status === 'fasted' && onCelebrate) {
+        const prevMax = prevMaxStreakRef.current;
+        const newMax = getMaxStreak(next);
+        if (newMax >= 7 && prevMax < 7) {
+          setTimeout(() => onCelebrate(), 300);
+        }
+        prevMaxStreakRef.current = newMax;
+      }
+
+      return next;
+    });
     setPromptDay(null);
-  }, [promptDay]);
+  }, [promptDay, onCelebrate]);
 
   const handleClose = useCallback(() => {
     setPromptDay(null);

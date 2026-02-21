@@ -2,12 +2,14 @@ import { useState, useCallback } from 'react';
 import { useLocation } from './hooks/useLocation';
 import { usePrayerTimes } from './hooks/usePrayerTimes';
 import { useSunCycle } from './hooks/useSunCycle';
+import { useCelebration } from './hooks/useCelebration';
 import { getRamadanDay } from './lib/ramadan';
 import { SkyCard } from './components/SkyCard';
 import { Header } from './components/Header';
 import { DayArc } from './components/DayArc';
 import { RamadanGrid } from './components/RamadanGrid';
 import { EidCountdown } from './components/EidCountdown';
+import { CelebrationOverlay } from './components/CelebrationOverlay';
 import { LocationPrompt } from './components/LocationPrompt';
 
 function App() {
@@ -32,9 +34,12 @@ function App() {
     setScrubProgress(progress);
   }, []);
 
-  // Display progress: scrubbed value takes priority over real-time
-  const displayProgress = scrubProgress ?? dayCycle.dayProgress;
-  const isScrubbing = scrubProgress !== null;
+  // 7-day streak celebration
+  const { animatedProgress, showCongrats, isCelebrating, triggerCelebration } = useCelebration();
+
+  // Display progress: celebration > scrub > real-time
+  const displayProgress = animatedProgress ?? scrubProgress ?? dayCycle.dayProgress;
+  const isScrubbing = scrubProgress !== null || isCelebrating;
 
   return (
     <div className="relative z-10 w-full max-w-[400px] mx-auto px-5 py-6 min-h-full flex flex-col justify-center">
@@ -77,10 +82,15 @@ function App() {
                 onScrub={handleScrub}
               />
             )}
-            <RamadanGrid dayCycle={dayCycle} />
+            <RamadanGrid dayCycle={dayCycle} onCelebrate={triggerCelebration} />
             <EidCountdown onChangeLocation={resetLocation} />
           </>
         )}
+
+        <CelebrationOverlay
+          visible={showCongrats}
+          onDismiss={() => {}}
+        />
       </SkyCard>
     </div>
   );
