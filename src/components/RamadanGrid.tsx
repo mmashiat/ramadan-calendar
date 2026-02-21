@@ -1,14 +1,12 @@
 import { useState, useCallback, useMemo } from 'react';
 import { RAMADAN_DAYS, getRamadanDay } from '../lib/ramadan';
-import { getFastingStatus, setFastingStatus, type FastingStatus, type DayPrayerTimes } from '../lib/storage';
-import { getMoonPhase } from '../lib/moon';
+import { getFastingStatus, setFastingStatus, type FastingStatus } from '../lib/storage';
 import { DayCircle } from './DayCircle';
 import { FastingPrompt } from './FastingPrompt';
-import { SunArc } from './SunArc';
+import type { DayCycleInfo } from '../hooks/useSunCycle';
 
 interface RamadanGridProps {
-  sunProgress: number;
-  todayPrayerTimes?: DayPrayerTimes;
+  dayCycle: DayCycleInfo;
 }
 
 function computeStreaks(log: Record<number, FastingStatus>) {
@@ -39,10 +37,8 @@ function computeStreaks(log: Record<number, FastingStatus>) {
   return { streaks };
 }
 
-export function RamadanGrid({ sunProgress, todayPrayerTimes }: RamadanGridProps) {
+export function RamadanGrid({ dayCycle }: RamadanGridProps) {
   const today = getRamadanDay(new Date());
-  const isDaytime = sunProgress >= 0 && sunProgress <= 1;
-  const moonPhase = getMoonPhase(today);
 
   const [fastingLog, setFastingLog] = useState<Record<number, FastingStatus>>(() => {
     const log: Record<number, FastingStatus> = {};
@@ -71,6 +67,12 @@ export function RamadanGrid({ sunProgress, todayPrayerTimes }: RamadanGridProps)
 
   const { streaks } = useMemo(() => computeStreaks(fastingLog), [fastingLog]);
 
+  // Map dayCycle to the old sunProgress values that DayCircle expects
+  // isDay=true → 0-1, post-maghrib → 2, pre-fajr → -1
+  const circleSunProgress = dayCycle.isDay
+    ? ((dayCycle.dayProgress - dayCycle.fajrFraction) / (dayCycle.maghribFraction - dayCycle.fajrFraction))
+    : dayCycle.dayProgress > dayCycle.maghribFraction ? 2 : -1;
+
   const days = [];
   for (let d = 1; d <= RAMADAN_DAYS; d++) {
     const isToday = d === today;
@@ -86,7 +88,7 @@ export function RamadanGrid({ sunProgress, todayPrayerTimes }: RamadanGridProps)
         isPast={isPast}
         isFuture={isFuture}
         fastingStatus={fastingLog[d]}
-        sunProgress={isToday ? sunProgress : isPast ? 2 : -1}
+        sunProgress={isToday ? circleSunProgress : isPast ? 2 : -1}
         isInStreak={streakLength >= 2}
         streakLength={streakLength}
         onTap={() => handleTap(d)}
@@ -96,36 +98,8 @@ export function RamadanGrid({ sunProgress, todayPrayerTimes }: RamadanGridProps)
 
   return (
     <>
-      {/* Sun arc during daytime */}
-      {isDaytime && todayPrayerTimes && (
-        <div className="mb-6">
-          <SunArc
-            sunProgress={sunProgress}
-            fajrTime={todayPrayerTimes.imsak}
-            maghribTime={todayPrayerTimes.maghrib}
-          />
-        </div>
-      )}
-
-      {/* Calendar grid with moon background at night */}
-      <div className="relative">
-        {/* Moon phase background — only at night */}
-        {!isDaytime && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
-            <img
-              src={moonPhase.image}
-              alt={moonPhase.name}
-              className="w-[220px] h-[220px] object-contain rounded-full opacity-[0.08]"
-              style={{
-                filter: 'blur(1px)',
-              }}
-            />
-          </div>
-        )}
-
-        <div className="relative z-10 grid grid-cols-6 gap-x-4 gap-y-5 place-items-center px-3">
-          {days}
-        </div>
+      <div className="grid grid-cols-6 gap-x-4 gap-y-5 place-items-center px-3">
+        {days}
       </div>
 
       {promptDay !== null && (

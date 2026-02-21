@@ -1,9 +1,11 @@
+import { useState, useCallback } from 'react';
 import { useLocation } from './hooks/useLocation';
 import { usePrayerTimes } from './hooks/usePrayerTimes';
 import { useSunCycle } from './hooks/useSunCycle';
 import { getRamadanDay } from './lib/ramadan';
 import { SkyCard } from './components/SkyCard';
 import { Header } from './components/Header';
+import { DayArc } from './components/DayArc';
 import { RamadanGrid } from './components/RamadanGrid';
 import { EidCountdown } from './components/EidCountdown';
 import { LocationPrompt } from './components/LocationPrompt';
@@ -21,11 +23,27 @@ function App() {
 
   const today = getRamadanDay(new Date());
   const todayTimes = times[today];
-  const sunProgress = useSunCycle(todayTimes);
+  const dayCycle = useSunCycle(todayTimes);
+
+  // Override progress when user is scrubbing the arc
+  const [scrubProgress, setScrubProgress] = useState<number | null>(null);
+
+  const handleScrub = useCallback((progress: number | null) => {
+    setScrubProgress(progress);
+  }, []);
+
+  // Display progress: scrubbed value takes priority over real-time
+  const displayProgress = scrubProgress ?? dayCycle.dayProgress;
+  const isScrubbing = scrubProgress !== null;
 
   return (
     <div className="relative z-10 w-full max-w-[400px] mx-auto px-5 py-6 min-h-full flex flex-col justify-center">
-      <SkyCard sunProgress={sunProgress}>
+      <SkyCard
+        dayProgress={displayProgress}
+        fajrFraction={dayCycle.fajrFraction}
+        maghribFraction={dayCycle.maghribFraction}
+        isScrubbing={isScrubbing}
+      >
         <Header
           locationError={!needsPermission ? locError : null}
           todayPrayerTimes={todayTimes}
@@ -48,7 +66,18 @@ function App() {
           </div>
         ) : (
           <>
-            <RamadanGrid sunProgress={sunProgress} todayPrayerTimes={todayTimes} />
+            {todayTimes && (
+              <DayArc
+                dayProgress={displayProgress}
+                fajrFraction={dayCycle.fajrFraction}
+                maghribFraction={dayCycle.maghribFraction}
+                imsakFraction={dayCycle.imsakFraction}
+                imsakTime={todayTimes.imsak}
+                maghribTime={todayTimes.maghrib}
+                onScrub={handleScrub}
+              />
+            )}
+            <RamadanGrid dayCycle={dayCycle} />
             <EidCountdown />
           </>
         )}

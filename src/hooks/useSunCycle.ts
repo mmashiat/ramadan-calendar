@@ -6,42 +6,60 @@ function timeToMinutes(timeStr: string): number {
   return hours * 60 + minutes;
 }
 
-// Sun progress states:
-// -1 = before fajr (night)
-//  0-1 = fajr to maghrib (the fasting window - sun cycle)
-//  2 = after maghrib, before midnight (prompt to log)
-//  3 = after midnight / post-isha (logged or waiting for next day)
-export function useSunCycle(prayerTimes: DayPrayerTimes | undefined): number {
-  const [progress, setProgress] = useState(-1);
+// Unified day progress: 0-1 over a full 24-hour cycle (midnight to midnight)
+// Also returns the fajr/maghrib breakpoints as fractions so the arc and sky know where day/night boundaries are
+export interface DayCycleInfo {
+  dayProgress: number;    // 0-1 across 24 hours
+  fajrFraction: number;   // where fajr falls in the 0-1 range
+  maghribFraction: number; // where maghrib falls in the 0-1 range
+  imsakFraction: number;   // where imsak falls
+  isDay: boolean;          // true if between fajr and maghrib
+}
+
+export function useSunCycle(prayerTimes: DayPrayerTimes | undefined): DayCycleInfo {
+  const [info, setInfo] = useState<DayCycleInfo>({
+    dayProgress: 0,
+    fajrFraction: 0.24,
+    maghribFraction: 0.76,
+    imsakFraction: 0.24,
+    isDay: false,
+  });
   const rafRef = useRef<number>(0);
 
   useEffect(() => {
     if (!prayerTimes) {
-      setProgress(-1);
+      setInfo({
+        dayProgress: 0,
+        fajrFraction: 0.24,
+        maghribFraction: 0.76,
+        imsakFraction: 0.24,
+        isDay: false,
+      });
       return;
     }
 
     const fajrMin = timeToMinutes(prayerTimes.fajr);
+    const imsakMin = timeToMinutes(prayerTimes.imsak);
     const maghribMin = timeToMinutes(prayerTimes.maghrib);
-    const ishaMin = timeToMinutes(prayerTimes.isha);
-    const totalSpan = maghribMin - fajrMin; // Fasting window: fajr to maghrib
+    const totalDay = 1440; // 24 * 60
+
+    const fajrFrac = fajrMin / totalDay;
+    const imsakFrac = imsakMin / totalDay;
+    const maghribFrac = maghribMin / totalDay;
 
     function update() {
       const now = new Date();
       const currentMin = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
+      const progress = currentMin / totalDay;
+      const isDay = currentMin >= fajrMin && currentMin <= maghribMin;
 
-      if (currentMin < fajrMin) {
-        setProgress(-1); // Before fajr — night
-      } else if (currentMin <= maghribMin) {
-        // During the fast: fajr to maghrib = 0 to 1
-        const p = (currentMin - fajrMin) / totalSpan;
-        setProgress(Math.max(0, Math.min(1, p)));
-      } else if (currentMin <= ishaMin + 120) {
-        // After maghrib — prompt window (2 hours after isha)
-        setProgress(2);
-      } else {
-        setProgress(3); // Late night
-      }
+      setInfo({
+        dayProgress: Math.max(0, Math.min(1, progress)),
+        fajrFraction: fajrFrac,
+        maghribFraction: maghribFrac,
+        imsakFraction: imsakFrac,
+        isDay,
+      });
 
       rafRef.current = requestAnimationFrame(update);
     }
@@ -53,5 +71,5 @@ export function useSunCycle(prayerTimes: DayPrayerTimes | undefined): number {
     };
   }, [prayerTimes]);
 
-  return progress;
+  return info;
 }

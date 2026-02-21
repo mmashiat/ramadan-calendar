@@ -2,12 +2,18 @@ import { useMemo } from 'react';
 import { getSkyGradient } from '../lib/sky';
 
 interface SkyCardProps {
-  sunProgress: number;
+  dayProgress: number;
+  fajrFraction: number;
+  maghribFraction: number;
+  isScrubbing: boolean;
   children: React.ReactNode;
 }
 
-export function SkyCard({ sunProgress, children }: SkyCardProps) {
-  const gradient = useMemo(() => getSkyGradient(sunProgress), [sunProgress]);
+export function SkyCard({ dayProgress, fajrFraction, maghribFraction, isScrubbing, children }: SkyCardProps) {
+  const gradient = useMemo(
+    () => getSkyGradient(dayProgress, fajrFraction, maghribFraction),
+    [dayProgress, fajrFraction, maghribFraction]
+  );
 
   return (
     <div className="relative rounded-[24px] overflow-hidden">
@@ -16,7 +22,7 @@ export function SkyCard({ sunProgress, children }: SkyCardProps) {
         className="absolute inset-0 z-0"
         style={{
           background: `linear-gradient(to bottom, ${gradient.top}, ${gradient.mid} 55%, ${gradient.bottom})`,
-          transition: 'background 3s ease-in-out',
+          transition: isScrubbing ? 'none' : 'background 3s ease-in-out',
         }}
       />
 
