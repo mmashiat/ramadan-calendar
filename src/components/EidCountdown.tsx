@@ -29,7 +29,7 @@ export function EidCountdown() {
   }
 
   return (
-    <div className="flex items-center justify-center mt-10 pt-5 pb-4">
+    <div className="flex items-center justify-center" style={{ marginTop: '32px' }}>
       <span className="text-[13px] font-semibold text-white/40 tracking-[0.25em] uppercase leading-none">
         {daysLeft} {daysLeft === 1 ? 'day' : 'days'} until Eid
       </span>
