@@ -15,7 +15,7 @@ interface PrayerTimesState {
 export function usePrayerTimes(lat: number, lng: number, locationReady: boolean): PrayerTimesState {
   const [state, setState] = useState<PrayerTimesState>(() => {
     const cached = getCachedPrayerTimes();
-    if (cached) {
+    if (cached && Object.keys(cached).length > 0 && cached[1]?.imsak) {
       return { times: cached, loading: false, error: null };
     }
     return { times: {}, loading: true, error: null };
@@ -25,7 +25,7 @@ export function usePrayerTimes(lat: number, lng: number, locationReady: boolean)
     if (!locationReady || lat === 0) return;
 
     const cached = getCachedPrayerTimes();
-    if (cached && Object.keys(cached).length === RAMADAN_DAYS) {
+    if (cached && Object.keys(cached).length === RAMADAN_DAYS && cached[1]?.imsak) {
       setState({ times: cached, loading: false, error: null });
       return;
     }

@@ -15,16 +15,16 @@ export function Header({ locationError, todayPrayerTimes }: HeaderProps) {
   });
 
   return (
-    <div className="text-center mb-6">
-      <h1 className="text-[16px] font-medium text-white/90 tracking-wide">
+    <div className="text-center mb-7">
+      <h1 className="text-[17px] font-medium text-white/90 tracking-wide">
         {dateStr}
       </h1>
-      <p className="text-[10px] text-white/30 mt-0.5 tracking-[0.2em] uppercase">
+      <p className="text-[10px] text-white/30 mt-1 tracking-[0.2em] uppercase">
         Ramadan {RAMADAN_YEAR_AH}
       </p>
 
       {todayPrayerTimes && (
-        <div className="flex justify-center items-center gap-5 mt-4 pt-4 border-t border-white/[0.08]">
+        <div className="flex justify-center items-center gap-5 mt-5 pt-5 border-t border-white/[0.08]">
           <TimeDisplay label="Imsak" time={todayPrayerTimes.imsak} />
           <div className="w-px h-8 bg-white/[0.08]" />
           <TimeDisplay label="Suhoor" time={todayPrayerTimes.fajr} />

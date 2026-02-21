@@ -30,7 +30,7 @@ export function getFastingStatus(day: number): FastingStatus {
 }
 
 // Cache prayer times
-const PRAYER_CACHE_KEY = 'ramadan-prayer-times-1447';
+const PRAYER_CACHE_KEY = 'ramadan-prayer-times-1447-v2';
 
 export interface DayPrayerTimes {
   fajr: string;
