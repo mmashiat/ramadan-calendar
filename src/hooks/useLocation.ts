@@ -28,7 +28,7 @@ export function useLocation(): LocationState & { requestLocation: () => void; re
       return;
     }
 
-    setState(prev => ({ ...prev, loading: true, needsPermission: false }));
+    setState({ lat: 0, lng: 0, loading: true, error: null, needsPermission: false });
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -53,7 +53,7 @@ export function useLocation(): LocationState & { requestLocation: () => void; re
           needsPermission: false,
         });
       },
-      { enableHighAccuracy: false, timeout: 10000 }
+      { enableHighAccuracy: true, timeout: 15000 }
     );
   }, []);
 

@@ -73,4 +73,6 @@ export function cacheLocation(lat: number, lng: number): void {
 
 export function clearCachedLocation(): void {
   localStorage.removeItem(LOCATION_KEY);
+  // Also clear prayer times since they're location-dependent
+  localStorage.removeItem(PRAYER_CACHE_KEY);
 }

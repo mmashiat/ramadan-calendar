@@ -30,6 +30,9 @@ export function usePrayerTimes(lat: number, lng: number, locationReady: boolean)
       return;
     }
 
+    // No valid cache — show loading and fetch
+    setState({ times: {}, loading: true, error: null });
+
     async function fetchAllDays() {
       try {
         const times: Record<number, DayPrayerTimes> = {};

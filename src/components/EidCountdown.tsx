@@ -41,7 +41,8 @@ export function EidCountdown({ onChangeLocation }: EidCountdownProps) {
       {onChangeLocation && (
         <button
           onClick={onChangeLocation}
-          className="mt-4 text-[10px] text-white/20 tracking-[0.1em] hover:text-white/40 transition-colors"
+          className="text-[10px] text-white/20 tracking-[0.1em] hover:text-white/40 active:text-white/50 transition-colors"
+          style={{ marginTop: '20px', padding: '8px 16px' }}
         >
           Change Location
         </button>
