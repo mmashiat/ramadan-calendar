@@ -37,7 +37,7 @@ export function SkyCard({ dayProgress, fajrFraction, maghribFraction, isScrubbin
       />
 
       {/* Content */}
-      <div className="relative z-10 px-7 py-14">
+      <div className="relative z-10" style={{ padding: '40px 28px' }}>
         {children}
       </div>
     </div>

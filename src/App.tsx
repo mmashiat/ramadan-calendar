@@ -82,10 +82,6 @@ function App() {
           </>
         )}
       </SkyCard>
-
-      <p className="text-center text-[8px] text-white/[0.15] mt-4 tracking-[0.15em]">
-        Tap a circle to log your fast
-      </p>
     </div>
   );
 }
