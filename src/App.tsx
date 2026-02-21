@@ -29,7 +29,6 @@ function App() {
         <Header
           locationError={!needsPermission ? locError : null}
           todayPrayerTimes={todayTimes}
-          sunProgress={sunProgress}
         />
 
         {needsPermission ? (
@@ -49,7 +48,7 @@ function App() {
           </div>
         ) : (
           <>
-            <RamadanGrid sunProgress={sunProgress} />
+            <RamadanGrid sunProgress={sunProgress} todayPrayerTimes={todayTimes} />
             <EidCountdown />
           </>
         )}

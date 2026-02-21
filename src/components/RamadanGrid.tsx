@@ -1,11 +1,14 @@
 import { useState, useCallback, useMemo } from 'react';
 import { RAMADAN_DAYS, getRamadanDay } from '../lib/ramadan';
-import { getFastingStatus, setFastingStatus, type FastingStatus } from '../lib/storage';
+import { getFastingStatus, setFastingStatus, type FastingStatus, type DayPrayerTimes } from '../lib/storage';
+import { getMoonPhase } from '../lib/moon';
 import { DayCircle } from './DayCircle';
 import { FastingPrompt } from './FastingPrompt';
+import { SunArc } from './SunArc';
 
 interface RamadanGridProps {
   sunProgress: number;
+  todayPrayerTimes?: DayPrayerTimes;
 }
 
 function computeStreaks(log: Record<number, FastingStatus>) {
@@ -33,20 +36,13 @@ function computeStreaks(log: Record<number, FastingStatus>) {
     }
   }
 
-  let activeStreak = 0;
-  for (let d = RAMADAN_DAYS; d >= 1; d--) {
-    if (log[d] === 'fasted') {
-      activeStreak = streaks.get(d) ?? 0;
-      break;
-    }
-    if (log[d] === 'missed') break;
-  }
-
-  return { streaks, activeStreak };
+  return { streaks };
 }
 
-export function RamadanGrid({ sunProgress }: RamadanGridProps) {
+export function RamadanGrid({ sunProgress, todayPrayerTimes }: RamadanGridProps) {
   const today = getRamadanDay(new Date());
+  const isDaytime = sunProgress >= 0 && sunProgress <= 1;
+  const moonPhase = getMoonPhase(today);
 
   const [fastingLog, setFastingLog] = useState<Record<number, FastingStatus>>(() => {
     const log: Record<number, FastingStatus> = {};
@@ -73,10 +69,7 @@ export function RamadanGrid({ sunProgress }: RamadanGridProps) {
     setPromptDay(null);
   }, []);
 
-  const fastedCount = Object.values(fastingLog).filter(s => s === 'fasted').length;
-  const missedCount = Object.values(fastingLog).filter(s => s === 'missed').length;
-
-  const { streaks, activeStreak } = useMemo(() => computeStreaks(fastingLog), [fastingLog]);
+  const { streaks } = useMemo(() => computeStreaks(fastingLog), [fastingLog]);
 
   const days = [];
   for (let d = 1; d <= RAMADAN_DAYS; d++) {
@@ -103,36 +96,36 @@ export function RamadanGrid({ sunProgress }: RamadanGridProps) {
 
   return (
     <>
-      <div className="grid grid-cols-6 gap-x-4 gap-y-5 place-items-center px-3">
-        {days}
-      </div>
+      {/* Sun arc during daytime */}
+      {isDaytime && todayPrayerTimes && (
+        <div className="mb-6">
+          <SunArc
+            sunProgress={sunProgress}
+            fajrTime={todayPrayerTimes.imsak}
+            maghribTime={todayPrayerTimes.maghrib}
+          />
+        </div>
+      )}
 
-      <div className="flex justify-center items-center gap-4 mt-12 pt-6 border-t border-white/[0.06]">
-        {fastedCount > 0 && (
-          <div className="flex items-center gap-1.5">
-            <div className="w-[6px] h-[6px] rounded-full bg-emerald-500/80" />
-            <span className="text-[10px] text-white/30 tabular-nums">{fastedCount}</span>
+      {/* Calendar grid with moon background at night */}
+      <div className="relative">
+        {/* Moon phase background — only at night */}
+        {!isDaytime && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
+            <img
+              src={moonPhase.image}
+              alt={moonPhase.name}
+              className="w-[220px] h-[220px] object-contain rounded-full opacity-[0.08]"
+              style={{
+                filter: 'blur(1px)',
+              }}
+            />
           </div>
         )}
-        {missedCount > 0 && (
-          <div className="flex items-center gap-1.5">
-            <div className="w-[6px] h-[6px] rounded-full bg-red-500/80" />
-            <span className="text-[10px] text-white/30 tabular-nums">{missedCount}</span>
-          </div>
-        )}
-        {activeStreak >= 2 && (
-          <div className="flex items-center gap-1.5">
-            <span className="text-emerald-400/50 leading-none">
-              <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor">
-                <path d="M8 1c-1.5 3-4 4-4 8a4 4 0 0 0 8 0c0-4-2.5-5-4-8z" />
-              </svg>
-            </span>
-            <span className="text-[10px] text-white/30 tabular-nums">{activeStreak} streak</span>
-          </div>
-        )}
-        {fastedCount === 0 && missedCount === 0 && (
-          <span className="text-[10px] text-white/20">Day {Math.min(today, 30)} of 30</span>
-        )}
+
+        <div className="relative z-10 grid grid-cols-6 gap-x-4 gap-y-5 place-items-center px-3">
+          {days}
+        </div>
       </div>
 
       {promptDay !== null && (
