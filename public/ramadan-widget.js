@@ -23,14 +23,19 @@ async function createWidget() {
     data = {
       ramadanDay: '?', totalDays: 30, daysUntilEid: '?',
       imsak: '--:--', fajr: '--:--', maghrib: '--:--',
-      dayProgress: 0.5, fajrFraction: 0.24, maghribFraction: 0.76, imsakFraction: 0.23,
+      fajrFraction: 0.24, maghribFraction: 0.76, imsakFraction: 0.23,
     };
   }
+
+  // Compute dayProgress locally using device time (not server UTC)
+  const now = new Date();
+  const localMinutes = now.getHours() * 60 + now.getMinutes();
+  data.dayProgress = localMinutes / 1440;
 
   const w = new ListWidget();
   w.url = WIDGET_URL;
 
-  // Dynamic sky gradient based on time of day
+  // Dynamic sky gradient based on local time of day
   const gradient = new LinearGradient();
   gradient.locations = [0, 0.5, 1];
   const skyColors = getSkyColors(data.dayProgress, data.fajrFraction, data.maghribFraction);
@@ -79,6 +84,10 @@ async function createWidget() {
   footer.font = Font.mediumSystemFont(9);
   footer.textColor = new Color('#ffffff', 0.25);
   footer.centerAlignText();
+
+  // Refresh every 15 minutes for updated sun position
+  const nextRefresh = new Date(Date.now() + 15 * 60 * 1000);
+  w.refreshAfterDate = nextRefresh;
 
   return w;
 }
