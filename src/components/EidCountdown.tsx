@@ -29,8 +29,8 @@ export function EidCountdown() {
   }
 
   return (
-    <div className="flex items-center justify-center gap-2 mt-8 pt-4 border-t border-white/[0.06]">
-      <span className="text-[9px] text-white/20 tracking-[0.2em] uppercase leading-none">
+    <div className="flex items-center justify-center mt-10 pt-5">
+      <span className="text-[13px] font-semibold text-white/40 tracking-[0.25em] uppercase leading-none">
         {daysLeft} {daysLeft === 1 ? 'day' : 'days'} until Eid
       </span>
     </div>
