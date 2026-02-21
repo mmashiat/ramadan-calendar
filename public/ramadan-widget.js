@@ -160,7 +160,7 @@ function drawArc(dayProgress, fajrFrac, maghribFrac, imsakFrac, imsakTime, maghr
     const travelSteps = Math.floor(tNow * steps);
     for (let i = 0; i < travelSteps; i++) {
       const t1 = i / steps;
-      const t2 = (i + 1) / steps;
+      const t2 = (i + 0.5) / steps;
       const x1 = bezierX(t1, fajrX, midX, maghribX);
       const y1 = bezierY(t1, horizonY, peakY, horizonY);
       const x2 = bezierX(t2, fajrX, midX, maghribX);
@@ -190,7 +190,7 @@ function drawArc(dayProgress, fajrFrac, maghribFrac, imsakFrac, imsakTime, maghr
   ctx.strokePath();
 
   // Time labels
-  ctx.setTextColor(new Color('#ffffff', 0.2));
+  ctx.setTextColor(new Color('#ffffff', 0.35));
   ctx.setFont(Font.systemFont(7));
   ctx.drawText(imsakTime, new Point(imsakX - 12, horizonY + 5));
   ctx.drawText(maghribTime, new Point(maghribX - 12, horizonY + 5));
@@ -235,8 +235,8 @@ function drawArc(dayProgress, fajrFrac, maghribFrac, imsakFrac, imsakTime, maghr
     ctx.setFillColor(new Color('#c8cddc', 1));
     ctx.fillEllipse(new Rect(orbX - orbR, orbY - orbR, orbR * 2, orbR * 2));
     // Crescent shadow
-    ctx.setFillColor(new Color('#141432', 0.6));
-    ctx.fillEllipse(new Rect(orbX - orbR + 3, orbY - orbR - 1, orbR * 2 - 2, orbR * 2));
+    ctx.setFillColor(new Color('#141432', 0.7));
+    ctx.fillEllipse(new Rect(orbX - orbR + 4, orbY - orbR, orbR * 2, orbR * 2));
   }
 
   return ctx.getImage();

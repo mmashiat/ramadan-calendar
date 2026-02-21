@@ -3,6 +3,7 @@ import { useLocation } from './hooks/useLocation';
 import { usePrayerTimes } from './hooks/usePrayerTimes';
 import { useSunCycle } from './hooks/useSunCycle';
 import { useCelebration } from './hooks/useCelebration';
+import { useNotifications } from './hooks/useNotifications';
 import { getRamadanDay } from './lib/ramadan';
 import { SkyCard } from './components/SkyCard';
 import { Header } from './components/Header';
@@ -27,6 +28,9 @@ function App() {
   const today = getRamadanDay(new Date());
   const todayTimes = times[today];
   const dayCycle = useSunCycle(todayTimes);
+
+  // Notifications
+  const { isSupported: notifSupported, isDenied: notifDenied, enabled: notifEnabled, toggleNotifications } = useNotifications(todayTimes);
 
   // Override progress when user is scrubbing the arc
   const [scrubProgress, setScrubProgress] = useState<number | null>(null);
@@ -85,6 +89,32 @@ function App() {
             )}
             <RamadanGrid dayCycle={dayCycle} onCelebrate={triggerCelebration} />
             <EidCountdown onChangeLocation={resetLocation} />
+
+            {notifSupported && (
+              <div className="flex justify-center" style={{ marginTop: '8px' }}>
+                <button
+                  onClick={toggleNotifications}
+                  className="text-[10px] tracking-[0.05em] transition-colors rounded-full"
+                  style={{
+                    padding: '6px 14px',
+                    background: notifEnabled ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.04)',
+                    color: notifDenied
+                      ? 'rgba(255, 255, 255, 0.15)'
+                      : notifEnabled
+                        ? 'rgba(255, 255, 255, 0.5)'
+                        : 'rgba(255, 255, 255, 0.25)',
+                    border: '1px solid rgba(255, 255, 255, 0.06)',
+                  }}
+                  disabled={notifDenied}
+                >
+                  {notifDenied
+                    ? 'Notifications blocked'
+                    : notifEnabled
+                      ? 'Notifications on'
+                      : 'Enable notifications'}
+                </button>
+              </div>
+            )}
           </>
         )}
 
