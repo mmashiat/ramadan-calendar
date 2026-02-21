@@ -103,11 +103,11 @@ export function RamadanGrid({ sunProgress }: RamadanGridProps) {
 
   return (
     <>
-      <div className="grid grid-cols-6 gap-3.5 place-items-center px-2">
+      <div className="grid grid-cols-6 gap-x-4 gap-y-5 place-items-center px-3">
         {days}
       </div>
 
-      <div className="flex justify-center items-center gap-4 mt-10 pt-5 border-t border-white/[0.08]">
+      <div className="flex justify-center items-center gap-4 mt-8 pt-6 border-t border-white/[0.06]">
         {fastedCount > 0 && (
           <div className="flex items-center gap-1.5">
             <div className="w-[6px] h-[6px] rounded-full bg-emerald-500/80" />

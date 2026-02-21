@@ -31,7 +31,7 @@ export function SkyCard({ sunProgress, children }: SkyCardProps) {
       />
 
       {/* Content */}
-      <div className="relative z-10 px-7 py-8">
+      <div className="relative z-10 px-8 py-9">
         {children}
       </div>
     </div>
