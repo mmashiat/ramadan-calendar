@@ -30,7 +30,7 @@ function App() {
   const dayCycle = useSunCycle(todayTimes);
 
   // Notifications
-  const { isSupported: notifSupported, isDenied: notifDenied, enabled: notifEnabled, toggleNotifications } = useNotifications(todayTimes);
+  const { isSupported: notifSupported, isDenied: notifDenied, enabled: notifEnabled, showSettingsHint, toggleNotifications, dismissSettingsHint } = useNotifications(todayTimes);
 
   // Override progress when user is scrubbing the arc
   const [scrubProgress, setScrubProgress] = useState<number | null>(null);
@@ -91,28 +91,56 @@ function App() {
             <EidCountdown onChangeLocation={resetLocation} />
 
             {notifSupported && (
-              <div className="flex justify-center" style={{ marginTop: '8px' }}>
+              <div className="flex flex-col items-center" style={{ marginTop: '8px', gap: '6px' }}>
                 <button
                   onClick={toggleNotifications}
-                  className="text-[10px] tracking-[0.05em] transition-colors rounded-full"
+                  className="text-[10px] tracking-[0.05em] transition-all rounded-full active:scale-95"
                   style={{
                     padding: '6px 14px',
-                    background: notifEnabled ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.04)',
+                    background: notifEnabled && !notifDenied
+                      ? 'rgba(255, 255, 255, 0.1)'
+                      : 'rgba(255, 255, 255, 0.04)',
                     color: notifDenied
-                      ? 'rgba(255, 255, 255, 0.15)'
+                      ? 'rgba(255, 255, 255, 0.3)'
                       : notifEnabled
                         ? 'rgba(255, 255, 255, 0.5)'
                         : 'rgba(255, 255, 255, 0.25)',
-                    border: '1px solid rgba(255, 255, 255, 0.06)',
+                    border: `1px solid ${notifDenied ? 'rgba(255, 100, 100, 0.12)' : 'rgba(255, 255, 255, 0.06)'}`,
                   }}
-                  disabled={notifDenied}
                 >
                   {notifDenied
-                    ? 'Notifications blocked'
+                    ? 'Notifications blocked — tap to fix'
                     : notifEnabled
                       ? 'Notifications on'
                       : 'Enable notifications'}
                 </button>
+
+                {showSettingsHint && (
+                  <div
+                    className="text-[9px] text-center leading-relaxed animate-in fade-in"
+                    style={{
+                      color: 'rgba(255, 255, 255, 0.35)',
+                      background: 'rgba(255, 255, 255, 0.04)',
+                      border: '1px solid rgba(255, 255, 255, 0.06)',
+                      borderRadius: '10px',
+                      padding: '10px 14px',
+                      maxWidth: '240px',
+                    }}
+                  >
+                    <span style={{ color: 'rgba(255, 255, 255, 0.5)' }}>To enable notifications:</span>
+                    <br />
+                    Open Settings &gt; Safari &gt; Notifications
+                    <br />
+                    or tap the <span style={{ color: 'rgba(255, 255, 255, 0.5)' }}>AA</span> in the address bar
+                    <button
+                      onClick={(e) => { e.stopPropagation(); dismissSettingsHint(); }}
+                      className="block mx-auto text-[9px] transition-colors"
+                      style={{ marginTop: '6px', color: 'rgba(255, 255, 255, 0.2)' }}
+                    >
+                      Dismiss
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </>

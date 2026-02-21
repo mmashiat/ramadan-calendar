@@ -34,15 +34,15 @@ async function showNotification(title: string, body: string, tag: string): Promi
   }
 }
 
-type PermState = 'default' | 'granted' | 'denied' | 'unsupported';
+function getPermState(): 'default' | 'granted' | 'denied' | 'unsupported' {
+  if (typeof window === 'undefined' || !('Notification' in window)) return 'unsupported';
+  return Notification.permission as 'default' | 'granted' | 'denied';
+}
 
 export function useNotifications(todayTimes: DayPrayerTimes | undefined) {
   const imsakTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const iftarTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [permissionState, setPermissionState] = useState<PermState>(() => {
-    if (typeof window === 'undefined' || !('Notification' in window)) return 'unsupported';
-    return Notification.permission as PermState;
-  });
+  const [permissionState, setPermissionState] = useState(getPermState);
   const [enabled, setEnabled] = useState<boolean>(() => {
     try {
       return localStorage.getItem(NOTIFICATION_STORAGE_KEY) === 'true';
@@ -50,10 +50,33 @@ export function useNotifications(todayTimes: DayPrayerTimes | undefined) {
       return false;
     }
   });
+  // Show settings hint when user taps while denied
+  const [showSettingsHint, setShowSettingsHint] = useState(false);
 
   const isSupported = permissionState !== 'unsupported';
   const isGranted = permissionState === 'granted';
   const isDenied = permissionState === 'denied';
+
+  // Poll for permission changes (user may grant/revoke in browser settings)
+  useEffect(() => {
+    if (!isSupported) return;
+    const interval = setInterval(() => {
+      const current = getPermState();
+      setPermissionState(prev => {
+        if (prev !== current) {
+          // If permission was just granted externally, auto-enable
+          if (current === 'granted' && prev === 'denied') {
+            setEnabled(true);
+            localStorage.setItem(NOTIFICATION_STORAGE_KEY, 'true');
+            setShowSettingsHint(false);
+          }
+          return current;
+        }
+        return prev;
+      });
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [isSupported]);
 
   const requestPermission = useCallback(async (): Promise<boolean> => {
     if (!('Notification' in window)) {
@@ -62,11 +85,15 @@ export function useNotifications(todayTimes: DayPrayerTimes | undefined) {
     }
     try {
       const result = await Notification.requestPermission();
-      setPermissionState(result as PermState);
+      setPermissionState(result as typeof permissionState);
       if (result === 'granted') {
         setEnabled(true);
         localStorage.setItem(NOTIFICATION_STORAGE_KEY, 'true');
+        setShowSettingsHint(false);
         return true;
+      }
+      if (result === 'denied') {
+        setShowSettingsHint(true);
       }
       return false;
     } catch {
@@ -75,14 +102,31 @@ export function useNotifications(todayTimes: DayPrayerTimes | undefined) {
   }, []);
 
   const toggleNotifications = useCallback(async (): Promise<void> => {
-    if (!isGranted) {
+    // Re-check permission in case user changed it in settings
+    const current = getPermState();
+    setPermissionState(current);
+
+    if (current === 'denied') {
+      // Show hint to go to settings — toggle the hint on each tap
+      setShowSettingsHint(prev => !prev);
+      return;
+    }
+
+    if (current === 'default') {
+      // Haven't asked yet — request permission
       await requestPermission();
       return;
     }
+
+    // Permission is granted — toggle on/off freely
     const newState = !enabled;
     setEnabled(newState);
     localStorage.setItem(NOTIFICATION_STORAGE_KEY, String(newState));
-  }, [isGranted, enabled, requestPermission]);
+  }, [enabled, requestPermission]);
+
+  const dismissSettingsHint = useCallback(() => {
+    setShowSettingsHint(false);
+  }, []);
 
   // Clear timers on unmount
   useEffect(() => {
@@ -139,5 +183,13 @@ export function useNotifications(todayTimes: DayPrayerTimes | undefined) {
     return () => clearTimeout(midnightTimer);
   }, [enabled, isGranted]);
 
-  return { isSupported, isGranted, isDenied, enabled, toggleNotifications };
+  return {
+    isSupported,
+    isGranted,
+    isDenied,
+    enabled,
+    showSettingsHint,
+    toggleNotifications,
+    dismissSettingsHint,
+  };
 }
