@@ -51,7 +51,6 @@ export function DayCircle({
 
   const shouldPulse = isToday && sunProgress === 2 && !fastingStatus;
 
-  // Allow tapping: any past day or today (post-maghrib/late night) — including already logged days
   const isInteractive = !isFuture && (
     isPast ||
     (isToday && (sunProgress === 2 || sunProgress === 3))
@@ -67,15 +66,21 @@ export function DayCircle({
     return 'none';
   }, [isInStreak, fastingStatus, colors]);
 
+  // Staggered entrance delay based on position
+  const animDelay = `${day * 30}ms`;
+
   return (
-    <div className="flex flex-col items-center gap-1">
+    <div
+      className="flex flex-col items-center gap-1 animate-circle-pop"
+      style={{ animationDelay: animDelay }}
+    >
       <button
         onClick={isInteractive ? onTap : undefined}
         className={`
           relative flex items-center justify-center
           w-[36px] h-[36px] rounded-full
-          transition-all duration-700 ease-out
-          ${isInteractive ? 'cursor-pointer active:scale-90' : 'cursor-default'}
+          transition-all duration-300 ease-out
+          ${isInteractive ? 'cursor-pointer active:scale-75 hover:scale-110' : 'cursor-default'}
           ${shouldPulse ? 'animate-pulse-glow' : ''}
         `}
         style={{

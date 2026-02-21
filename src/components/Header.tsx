@@ -15,7 +15,7 @@ export function Header({ locationError, todayPrayerTimes }: HeaderProps) {
   });
 
   return (
-    <div className="text-center mb-8">
+    <div className="text-center mb-10">
       <h1 className="text-[17px] font-medium text-white/90 tracking-wide">
         {dateStr}
       </h1>
