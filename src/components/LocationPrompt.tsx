@@ -1,3 +1,5 @@
+import { GlassButton } from './ui/GlassButton';
+
 interface LocationPromptProps {
   onRequest: () => void;
   error?: string | null;
@@ -13,19 +15,14 @@ export function LocationPrompt({ onRequest, error }: LocationPromptProps) {
         </svg>
       </div>
       <div className="text-center">
-        <p className="text-[12px] text-white/70 font-medium">Enable Location</p>
-        <p className="text-[9px] text-white/25 mt-1 leading-relaxed max-w-[200px]">
+        <p className="text-[12px] text-white/80 font-medium">Enable Location</p>
+        <p className="text-[9px] text-white/30 mt-1 leading-relaxed max-w-[200px]">
           Prayer times are calculated based on your position for accurate Fajr and Maghrib times
         </p>
       </div>
-      <button
-        onClick={onRequest}
-        className="px-5 py-2 rounded-xl bg-white/[0.06] border border-white/[0.08]
-                   text-[11px] text-white/60 font-medium tracking-wide
-                   active:scale-95 transition-all duration-150"
-      >
+      <GlassButton onClick={onRequest} className="px-5">
         Allow Location
-      </button>
+      </GlassButton>
       {error && (
         <p className="text-[9px] text-amber-400/40 text-center">{error}</p>
       )}

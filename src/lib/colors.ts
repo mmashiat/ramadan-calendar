@@ -145,3 +145,14 @@ export const PROMPT_COLORS: SunColors = {
   glow: 'rgb(180, 100, 40)',
   glowIntensity: 0.35,
 };
+
+// Streak-enhanced fasted colors — glow increases with streak length
+export function getFastedStreakColors(streakLength: number): SunColors {
+  const intensity = Math.min(0.8, 0.4 + streakLength * 0.05);
+  return {
+    inner: 'rgb(16, 185, 129)',
+    outer: 'rgb(5, 150, 105)',
+    glow: 'rgb(16, 185, 129)',
+    glowIntensity: intensity,
+  };
+}

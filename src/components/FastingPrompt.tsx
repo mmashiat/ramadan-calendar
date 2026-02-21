@@ -1,3 +1,5 @@
+import { GlassButton } from './ui/GlassButton';
+
 interface FastingPromptProps {
   day: number;
   onRecord: (status: 'fasted' | 'missed') => void;
@@ -11,7 +13,14 @@ export function FastingPrompt({ day, onRecord, onClose }: FastingPromptProps) {
       onClick={onClose}
     >
       <div
-        className="bg-[#141414] rounded-[18px] p-5 mx-8 max-w-[260px] w-full border border-white/[0.05] shadow-[0_16px_48px_rgba(0,0,0,0.6)]"
+        className="rounded-[18px] p-5 mx-8 max-w-[260px] w-full"
+        style={{
+          background: 'rgba(10, 10, 10, 0.6)',
+          backdropFilter: 'blur(32px) saturate(1.3)',
+          WebkitBackdropFilter: 'blur(32px) saturate(1.3)',
+          border: '1px solid rgba(255, 255, 255, 0.05)',
+          boxShadow: '0 16px 48px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.03)',
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-center mb-3">
@@ -27,22 +36,20 @@ export function FastingPrompt({ day, onRecord, onClose }: FastingPromptProps) {
         </p>
 
         <div className="flex gap-2.5">
-          <button
+          <GlassButton
             onClick={() => onRecord('fasted')}
-            className="flex-1 py-2.5 rounded-[12px] bg-emerald-500/10 border border-emerald-500/12
-                       text-emerald-400/80 text-[12px] font-medium
-                       active:scale-[0.96] transition-all duration-150"
+            variant="success"
+            className="flex-1"
           >
             Yes
-          </button>
-          <button
+          </GlassButton>
+          <GlassButton
             onClick={() => onRecord('missed')}
-            className="flex-1 py-2.5 rounded-[12px] bg-red-500/8 border border-red-500/10
-                       text-red-400/70 text-[12px] font-medium
-                       active:scale-[0.96] transition-all duration-150"
+            variant="danger"
+            className="flex-1"
           >
             No
-          </button>
+          </GlassButton>
         </div>
       </div>
     </div>

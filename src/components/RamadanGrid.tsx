@@ -1,18 +1,53 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { RAMADAN_DAYS, getRamadanDay } from '../lib/ramadan';
-import { getFastingStatus, setFastingStatus, type FastingStatus, type DayPrayerTimes } from '../lib/storage';
-import { useSunCycle } from '../hooks/useSunCycle';
+import { getFastingStatus, setFastingStatus, type FastingStatus } from '../lib/storage';
 import { DayCircle } from './DayCircle';
 import { FastingPrompt } from './FastingPrompt';
 
 interface RamadanGridProps {
-  prayerTimes: Record<number, DayPrayerTimes>;
+  sunProgress: number;
 }
 
-export function RamadanGrid({ prayerTimes }: RamadanGridProps) {
+function computeStreaks(log: Record<number, FastingStatus>) {
+  const streaks = new Map<number, number>();
+  let currentStreak = 0;
+  let streakStart = -1;
+
+  for (let d = 1; d <= RAMADAN_DAYS; d++) {
+    if (log[d] === 'fasted') {
+      if (streakStart === -1) streakStart = d;
+      currentStreak++;
+    } else {
+      if (currentStreak > 0) {
+        for (let s = streakStart; s < streakStart + currentStreak; s++) {
+          streaks.set(s, currentStreak);
+        }
+      }
+      currentStreak = 0;
+      streakStart = -1;
+    }
+  }
+  if (currentStreak > 0) {
+    for (let s = streakStart; s < streakStart + currentStreak; s++) {
+      streaks.set(s, currentStreak);
+    }
+  }
+
+  // Find the active streak (one that includes the most recent fasted day)
+  let activeStreak = 0;
+  for (let d = RAMADAN_DAYS; d >= 1; d--) {
+    if (log[d] === 'fasted') {
+      activeStreak = streaks.get(d) ?? 0;
+      break;
+    }
+    if (log[d] === 'missed') break;
+  }
+
+  return { streaks, activeStreak };
+}
+
+export function RamadanGrid({ sunProgress }: RamadanGridProps) {
   const today = getRamadanDay(new Date());
-  const todayTimes = prayerTimes[today];
-  const sunProgress = useSunCycle(todayTimes);
 
   const [fastingLog, setFastingLog] = useState<Record<number, FastingStatus>>(() => {
     const log: Record<number, FastingStatus> = {};
@@ -42,11 +77,14 @@ export function RamadanGrid({ prayerTimes }: RamadanGridProps) {
   const fastedCount = Object.values(fastingLog).filter(s => s === 'fasted').length;
   const missedCount = Object.values(fastingLog).filter(s => s === 'missed').length;
 
+  const { streaks, activeStreak } = useMemo(() => computeStreaks(fastingLog), [fastingLog]);
+
   const days = [];
   for (let d = 1; d <= RAMADAN_DAYS; d++) {
     const isToday = d === today;
     const isPast = d < today;
     const isFuture = d > today;
+    const streakLength = streaks.get(d) ?? 0;
 
     days.push(
       <DayCircle
@@ -57,6 +95,8 @@ export function RamadanGrid({ prayerTimes }: RamadanGridProps) {
         isFuture={isFuture}
         fastingStatus={fastingLog[d]}
         sunProgress={isToday ? sunProgress : isPast ? 2 : -1}
+        isInStreak={streakLength >= 2}
+        streakLength={streakLength}
         onTap={() => handleTap(d)}
       />
     );
@@ -64,12 +104,11 @@ export function RamadanGrid({ prayerTimes }: RamadanGridProps) {
 
   return (
     <>
-      <div className="grid grid-cols-6 gap-[6px] place-items-center">
+      <div className="grid grid-cols-6 gap-[10px] place-items-center">
         {days}
       </div>
 
-      {/* Minimal stats */}
-      <div className="flex justify-center items-center gap-4 mt-3.5 pt-3 border-t border-white/[0.04]">
+      <div className="flex justify-center items-center gap-4 mt-3.5 pt-3 border-t border-white/[0.06]">
         {fastedCount > 0 && (
           <div className="flex items-center gap-1">
             <div className="w-[5px] h-[5px] rounded-full bg-emerald-500/80" />
@@ -80,6 +119,16 @@ export function RamadanGrid({ prayerTimes }: RamadanGridProps) {
           <div className="flex items-center gap-1">
             <div className="w-[5px] h-[5px] rounded-full bg-red-500/80" />
             <span className="text-[9px] text-white/25 tabular-nums">{missedCount}</span>
+          </div>
+        )}
+        {activeStreak >= 2 && (
+          <div className="flex items-center gap-1">
+            <span className="text-[9px] text-emerald-400/50 leading-none">
+              <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M8 1c-1.5 3-4 4-4 8a4 4 0 0 0 8 0c0-4-2.5-5-4-8z" />
+              </svg>
+            </span>
+            <span className="text-[9px] text-white/25 tabular-nums">{activeStreak} streak</span>
           </div>
         )}
         {fastedCount === 0 && missedCount === 0 && (
