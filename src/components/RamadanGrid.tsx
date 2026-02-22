@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useRef } from 'react';
+import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { RAMADAN_DAYS, getRamadanDay } from '../lib/ramadan';
 import { getFastingStatus, setFastingStatus, type FastingStatus } from '../lib/storage';
 import { DayCircle } from './DayCircle';
@@ -66,6 +66,15 @@ export function RamadanGrid({ dayCycle, onCelebrate }: RamadanGridProps) {
   });
 
   const [promptDay, setPromptDay] = useState<number | null>(null);
+  const [showFastedToast, setShowFastedToast] = useState(false);
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Clean up toast timer
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    };
+  }, []);
 
   const handleTap = useCallback((day: number) => {
     setPromptDay(day);
@@ -74,6 +83,15 @@ export function RamadanGrid({ dayCycle, onCelebrate }: RamadanGridProps) {
   const handleRecord = useCallback((status: 'fasted' | 'missed') => {
     if (promptDay === null) return;
     setFastingStatus(promptDay, status);
+
+    // Haptic feedback + toast animation for completed fast
+    if (status === 'fasted') {
+      if (navigator.vibrate) navigator.vibrate(50);
+      setShowFastedToast(true);
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+      toastTimerRef.current = setTimeout(() => setShowFastedToast(false), 2500);
+    }
+
     setFastingLog(prev => {
       const next = { ...prev, [promptDay]: status };
 
@@ -140,6 +158,28 @@ export function RamadanGrid({ dayCycle, onCelebrate }: RamadanGridProps) {
           onRecord={handleRecord}
           onClose={handleClose}
         />
+      )}
+
+      {showFastedToast && (
+        <div className="fixed inset-x-0 bottom-24 flex justify-center z-50 pointer-events-none">
+          <div
+            className="animate-fasted-toast px-5 py-3 rounded-2xl text-center"
+            style={{
+              background: 'rgba(16, 185, 129, 0.15)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              border: '1px solid rgba(16, 185, 129, 0.2)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+            }}
+          >
+            <p className="text-[13px] font-medium text-emerald-300/90 leading-snug">
+              Amazing, you did it!
+            </p>
+            <p className="text-[10px] text-emerald-400/50 mt-0.5">
+              Another one in the books
+            </p>
+          </div>
+        </div>
       )}
     </>
   );

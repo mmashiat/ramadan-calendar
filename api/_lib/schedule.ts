@@ -123,8 +123,9 @@ export async function scheduleNotificationsForSubscriber(
   // Schedule maghrib/iftar notification (10 min before)
   const maghribTime = timings.Maghrib?.replace(/\s*\(.*\)/, '').trim();
   if (maghribTime) {
-    const maghribUnix = prayerTimeToUnix(maghribTime, dateStr, timezone) - LEAD_MINUTES * 60;
-    if (maghribUnix > now) {
+    const maghribUnix = prayerTimeToUnix(maghribTime, dateStr, timezone);
+    const iftarAlertUnix = maghribUnix - LEAD_MINUTES * 60;
+    if (iftarAlertUnix > now) {
       await qstash.publishJSON({
         url: `${appUrl}/api/send-notification`,
         body: {
@@ -136,7 +137,24 @@ export async function scheduleNotificationsForSubscriber(
           tag: `iftar-${dateLabel}`,
           chainNext: true,
         },
-        notBefore: maghribUnix,
+        notBefore: iftarAlertUnix,
+      });
+    }
+
+    // Schedule fasting log reminder (1 hour after maghrib)
+    const logReminderUnix = maghribUnix + 60 * 60;
+    if (logReminderUnix > now) {
+      await qstash.publishJSON({
+        url: `${appUrl}/api/send-notification`,
+        body: {
+          redisKey,
+          type: 'log-reminder',
+          date: dateLabel,
+          title: 'Log your fast',
+          body: 'Did you complete your fast today? Tap to record it.',
+          tag: `log-${dateLabel}`,
+        },
+        notBefore: logReminderUnix,
       });
     }
   }
