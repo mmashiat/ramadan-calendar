@@ -161,21 +161,21 @@ export function RamadanGrid({ dayCycle, onCelebrate }: RamadanGridProps) {
       )}
 
       {showFastedToast && (
-        <div className="fixed inset-x-0 bottom-24 flex justify-center z-50 pointer-events-none">
+        <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
           <div
-            className="animate-fasted-toast px-5 py-3 rounded-2xl text-center"
+            className="animate-fasted-toast px-8 py-5 rounded-3xl text-center"
             style={{
-              background: 'rgba(16, 185, 129, 0.15)',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              border: '1px solid rgba(16, 185, 129, 0.2)',
-              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+              background: 'rgba(255, 255, 255, 0.08)',
+              backdropFilter: 'blur(24px) saturate(1.2)',
+              WebkitBackdropFilter: 'blur(24px) saturate(1.2)',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
+              boxShadow: '0 16px 48px rgba(0, 0, 0, 0.5)',
             }}
           >
-            <p className="text-[13px] font-medium text-emerald-300/90 leading-snug">
+            <p className="text-[18px] font-semibold text-white/90 leading-snug">
               Amazing, you did it!
             </p>
-            <p className="text-[10px] text-emerald-400/50 mt-0.5">
+            <p className="text-[13px] text-white/40 mt-1">
               Another one in the books
             </p>
           </div>
