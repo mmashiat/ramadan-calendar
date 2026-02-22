@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { hashEndpoint, scheduleNotificationsForSubscriber, getRedis, getQStash } from './_lib/schedule';
+import { hashEndpoint, scheduleNotificationsForSubscriber, getRedis, getQStash } from './_lib/schedule.js';
 
 const TTL_SECONDS = 35 * 24 * 60 * 60; // 35 days
 

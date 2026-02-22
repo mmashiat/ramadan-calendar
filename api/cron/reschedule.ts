@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { scheduleNotificationsForSubscriber, getRedis, getQStash } from '../_lib/schedule';
+import { scheduleNotificationsForSubscriber, getRedis, getQStash } from '../_lib/schedule.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Verify cron secret

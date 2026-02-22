@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { Receiver } from '@upstash/qstash';
 import webpush from 'web-push';
-import { scheduleNotificationsForSubscriber, getRedis, getQStash } from './_lib/schedule';
+import { scheduleNotificationsForSubscriber, getRedis, getQStash } from './_lib/schedule.js';
 
 const receiver = new Receiver({
   currentSigningKey: process.env.QSTASH_CURRENT_SIGNING_KEY!,
