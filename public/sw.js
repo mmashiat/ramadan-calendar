@@ -40,6 +40,30 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
+// Handle server-sent push notifications
+self.addEventListener('push', (event) => {
+  if (!event.data) return;
+
+  let data;
+  try {
+    data = event.data.json();
+  } catch {
+    data = { title: 'Ramadan Calendar', body: event.data.text() };
+  }
+
+  const { title, body, tag, icon } = data;
+
+  event.waitUntil(
+    self.registration.showNotification(title || 'Ramadan Calendar', {
+      body: body || '',
+      tag: tag || undefined,
+      icon: icon || '/icons/icon-192.png',
+      badge: '/icons/icon-192.png',
+      silent: false,
+    })
+  );
+});
+
 // Handle notification click — open the app or focus existing window
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();

@@ -39,7 +39,76 @@ function getPermState(): 'default' | 'granted' | 'denied' | 'unsupported' {
   return Notification.permission as 'default' | 'granted' | 'denied';
 }
 
-export function useNotifications(todayTimes: DayPrayerTimes | undefined) {
+function urlBase64ToUint8Array(base64String: string): Uint8Array {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
+async function subscribeToPush(lat: number, lng: number): Promise<void> {
+  const vapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+  if (!vapidKey) return;
+
+  try {
+    const registration = await navigator.serviceWorker?.ready;
+    if (!registration?.pushManager) return;
+
+    // Check for existing subscription
+    let subscription = await registration.pushManager.getSubscription();
+
+    if (!subscription) {
+      subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(vapidKey).buffer as ArrayBuffer,
+      });
+    }
+
+    // Send subscription to server
+    await fetch('/api/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        subscription: subscription.toJSON(),
+        lat,
+        lng,
+      }),
+    });
+  } catch (err) {
+    console.error('Failed to subscribe to push:', err);
+  }
+}
+
+async function unsubscribeFromPush(): Promise<void> {
+  try {
+    const registration = await navigator.serviceWorker?.ready;
+    if (!registration?.pushManager) return;
+
+    const subscription = await registration.pushManager.getSubscription();
+    if (!subscription) return;
+
+    // Tell server to remove subscription
+    await fetch('/api/subscribe', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ endpoint: subscription.endpoint }),
+    });
+
+    await subscription.unsubscribe();
+  } catch (err) {
+    console.error('Failed to unsubscribe from push:', err);
+  }
+}
+
+export function useNotifications(
+  todayTimes: DayPrayerTimes | undefined,
+  lat?: number,
+  lng?: number,
+) {
   const imsakTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const iftarTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [permissionState, setPermissionState] = useState(getPermState);
@@ -52,6 +121,8 @@ export function useNotifications(todayTimes: DayPrayerTimes | undefined) {
   });
   // Show settings hint when user taps while denied
   const [showSettingsHint, setShowSettingsHint] = useState(false);
+  // Track last lat/lng we subscribed with
+  const lastPushCoordsRef = useRef<string | null>(null);
 
   const isSupported = permissionState !== 'unsupported';
   const isGranted = permissionState === 'granted';
@@ -122,6 +193,12 @@ export function useNotifications(todayTimes: DayPrayerTimes | undefined) {
     const newState = !enabled;
     setEnabled(newState);
     localStorage.setItem(NOTIFICATION_STORAGE_KEY, String(newState));
+
+    // Handle Web Push subscription
+    if (!newState) {
+      unsubscribeFromPush();
+      lastPushCoordsRef.current = null;
+    }
   }, [enabled, requestPermission]);
 
   const dismissSettingsHint = useCallback(() => {
@@ -136,7 +213,23 @@ export function useNotifications(todayTimes: DayPrayerTimes | undefined) {
     };
   }, []);
 
-  // Schedule notifications
+  // Web Push subscription: subscribe/resubscribe when enabled + granted + coords available
+  useEffect(() => {
+    if (!enabled || !isGranted || lat == null || lng == null || lat === 0) return;
+
+    const coordsKey = `${lat},${lng}`;
+    if (lastPushCoordsRef.current === coordsKey) return;
+
+    // If we had a previous subscription with different coords, unsubscribe first
+    if (lastPushCoordsRef.current !== null) {
+      unsubscribeFromPush().then(() => subscribeToPush(lat, lng));
+    } else {
+      subscribeToPush(lat, lng);
+    }
+    lastPushCoordsRef.current = coordsKey;
+  }, [enabled, isGranted, lat, lng]);
+
+  // Schedule client-side notifications (fallback)
   useEffect(() => {
     if (imsakTimerRef.current) {
       clearTimeout(imsakTimerRef.current);

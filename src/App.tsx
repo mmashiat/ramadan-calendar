@@ -30,7 +30,7 @@ function App() {
   const dayCycle = useSunCycle(todayTimes);
 
   // Notifications
-  const { isSupported: notifSupported, isDenied: notifDenied, enabled: notifEnabled, showSettingsHint, toggleNotifications, dismissSettingsHint } = useNotifications(todayTimes);
+  const { isSupported: notifSupported, isDenied: notifDenied, enabled: notifEnabled, showSettingsHint, toggleNotifications, dismissSettingsHint } = useNotifications(todayTimes, lat, lng);
 
   // Override progress when user is scrubbing the arc
   const [scrubProgress, setScrubProgress] = useState<number | null>(null);
