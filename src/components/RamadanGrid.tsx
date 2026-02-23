@@ -4,10 +4,11 @@ import { getFastingStatus, setFastingStatus, type FastingStatus } from '../lib/s
 import { DayCircle } from './DayCircle';
 import { FastingPrompt } from './FastingPrompt';
 import type { DayCycleInfo } from '../hooks/useSunCycle';
+import type { CelebrationMessage } from '../hooks/useCelebration';
 
 interface RamadanGridProps {
   dayCycle: DayCycleInfo;
-  onCelebrate?: () => void;
+  onCelebrate?: (message?: CelebrationMessage) => void;
   onStreakChange?: (streak: number, totalFasted: number) => void;
 }
 
@@ -67,15 +68,6 @@ export function RamadanGrid({ dayCycle, onCelebrate, onStreakChange }: RamadanGr
   });
 
   const [promptDay, setPromptDay] = useState<number | null>(null);
-  const [showFastedToast, setShowFastedToast] = useState(false);
-  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Clean up toast timer
-  useEffect(() => {
-    return () => {
-      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-    };
-  }, []);
 
   const handleTap = useCallback((day: number) => {
     setPromptDay(day);
@@ -85,24 +77,41 @@ export function RamadanGrid({ dayCycle, onCelebrate, onStreakChange }: RamadanGr
     if (promptDay === null) return;
     setFastingStatus(promptDay, status);
 
-    // Haptic feedback + toast animation for completed fast
-    if (status === 'fasted') {
+    if (status === 'fasted' && onCelebrate) {
+      // Haptic feedback
       if (navigator.vibrate) navigator.vibrate(50);
-      setShowFastedToast(true);
-      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-      toastTimerRef.current = setTimeout(() => setShowFastedToast(false), 2500);
+
+      // Show fasted celebration overlay
+      setTimeout(() => {
+        onCelebrate({
+          emoji: '\u{2728}',
+          title: 'Amazing, you did it!',
+          subtitle: 'Another one in the books',
+        });
+      }, 200);
     }
 
     setFastingLog(prev => {
       const next = { ...prev, [promptDay]: status };
 
-      // Check if a streak just hit 7
+      // Check streak milestones: 7, 14, 21
       if (status === 'fasted' && onCelebrate) {
         const prevMax = prevMaxStreakRef.current;
         const newMax = getMaxStreak(next);
-        if (newMax >= 7 && prevMax < 7) {
-          setTimeout(() => onCelebrate(), 300);
+
+        const milestones: { threshold: number; message: CelebrationMessage }[] = [
+          { threshold: 7, message: { emoji: '\u{1F31F}', title: 'One week of fasting!', subtitle: 'Keep going strong' } },
+          { threshold: 14, message: { emoji: '\u{1F525}', title: 'Two weeks of fasting!', subtitle: 'You\'re unstoppable' } },
+          { threshold: 21, message: { emoji: '\u{1F4AB}', title: 'Three weeks of fasting!', subtitle: 'Almost there' } },
+        ];
+
+        for (const { threshold, message } of milestones) {
+          if (newMax >= threshold && prevMax < threshold) {
+            setTimeout(() => onCelebrate(message), 4000);
+            break;
+          }
         }
+
         prevMaxStreakRef.current = newMax;
       }
 
@@ -174,27 +183,6 @@ export function RamadanGrid({ dayCycle, onCelebrate, onStreakChange }: RamadanGr
         />
       )}
 
-      {showFastedToast && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
-          <div
-            className="animate-fasted-toast px-8 py-5 rounded-3xl text-center"
-            style={{
-              background: 'rgba(255, 255, 255, 0.08)',
-              backdropFilter: 'blur(24px) saturate(1.2)',
-              WebkitBackdropFilter: 'blur(24px) saturate(1.2)',
-              border: '1px solid rgba(255, 255, 255, 0.12)',
-              boxShadow: '0 16px 48px rgba(0, 0, 0, 0.5)',
-            }}
-          >
-            <p className="text-[18px] font-semibold text-white/90 leading-snug">
-              Amazing, you did it!
-            </p>
-            <p className="text-[13px] text-white/40 mt-1">
-              Another one in the books
-            </p>
-          </div>
-        </div>
-      )}
     </>
   );
 }

@@ -1,26 +1,68 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
-const CYCLE_DURATION = 3000; // 3 seconds for 3 full day/night cycles
-const CONGRATS_DURATION = 3500; // show congrats text for 3.5 seconds
+const CYCLE_DURATION = 3000;
+const CONGRATS_DURATION = 3500;
+
+export interface CelebrationMessage {
+  emoji: string;
+  title: string;
+  subtitle: string;
+}
 
 interface CelebrationState {
   animatedProgress: number | null;
   showCongrats: boolean;
+  congratsMessage: CelebrationMessage | null;
   isCelebrating: boolean;
-  triggerCelebration: () => void;
+  triggerCelebration: (message?: CelebrationMessage) => void;
 }
+
+const DEFAULT_MESSAGE: CelebrationMessage = {
+  emoji: '\u{1F31F}',
+  title: 'One week of fasting!',
+  subtitle: 'Keep going strong',
+};
 
 export function useCelebration(): CelebrationState {
   const [isCelebrating, setIsCelebrating] = useState(false);
   const [showCongrats, setShowCongrats] = useState(false);
+  const [congratsMessage, setCongratsMessage] = useState<CelebrationMessage | null>(null);
   const [animatedProgress, setAnimatedProgress] = useState<number | null>(null);
   const startTimeRef = useRef<number>(0);
   const rafRef = useRef<number>(0);
+  const queueRef = useRef<CelebrationMessage[]>([]);
+  const congratsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const triggerCelebration = useCallback(() => {
+  const showNext = useCallback(() => {
+    if (queueRef.current.length === 0) return;
+    const msg = queueRef.current.shift()!;
+    setCongratsMessage(msg);
+    setShowCongrats(true);
+
+    if (congratsTimerRef.current) clearTimeout(congratsTimerRef.current);
+    congratsTimerRef.current = setTimeout(() => {
+      setShowCongrats(false);
+      setCongratsMessage(null);
+      // Show next queued message if any
+      if (queueRef.current.length > 0) {
+        setTimeout(() => showNext(), 300);
+      }
+    }, CONGRATS_DURATION);
+  }, []);
+
+  const triggerCelebration = useCallback((message?: CelebrationMessage) => {
+    const msg = message ?? DEFAULT_MESSAGE;
+
+    if (isCelebrating || showCongrats) {
+      // Queue it
+      queueRef.current.push(msg);
+      return;
+    }
+
+    setCongratsMessage(msg);
     setIsCelebrating(true);
     startTimeRef.current = performance.now();
-  }, []);
+  }, [isCelebrating, showCongrats]);
 
   useEffect(() => {
     if (!isCelebrating) return;
@@ -29,19 +71,23 @@ export function useCelebration(): CelebrationState {
       const elapsed = now - startTimeRef.current;
 
       if (elapsed < CYCLE_DURATION) {
-        // 3 full cycles: each cycle is CYCLE_DURATION/3 ms
         const cycleProgress = (elapsed / CYCLE_DURATION) * 3;
         const progress = cycleProgress % 1;
         setAnimatedProgress(progress);
         rafRef.current = requestAnimationFrame(animate);
       } else {
-        // Animation done, show congrats
         setAnimatedProgress(null);
         setIsCelebrating(false);
         setShowCongrats(true);
 
-        setTimeout(() => {
+        if (congratsTimerRef.current) clearTimeout(congratsTimerRef.current);
+        congratsTimerRef.current = setTimeout(() => {
           setShowCongrats(false);
+          setCongratsMessage(null);
+          // Show next queued message
+          if (queueRef.current.length > 0) {
+            setTimeout(() => showNext(), 300);
+          }
         }, CONGRATS_DURATION);
       }
     };
@@ -51,7 +97,7 @@ export function useCelebration(): CelebrationState {
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [isCelebrating]);
+  }, [isCelebrating, showNext]);
 
-  return { animatedProgress, showCongrats, isCelebrating, triggerCelebration };
+  return { animatedProgress, showCongrats, congratsMessage, isCelebrating, triggerCelebration };
 }

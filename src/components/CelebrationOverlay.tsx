@@ -1,9 +1,12 @@
 interface CelebrationOverlayProps {
   visible: boolean;
   onDismiss: () => void;
+  emoji?: string;
+  title?: string;
+  subtitle?: string;
 }
 
-export function CelebrationOverlay({ visible, onDismiss }: CelebrationOverlayProps) {
+export function CelebrationOverlay({ visible, onDismiss, emoji = '\u{1F31F}', title = 'One week of fasting!', subtitle = 'Keep going strong' }: CelebrationOverlayProps) {
   if (!visible) return null;
 
   return (
@@ -18,12 +21,12 @@ export function CelebrationOverlay({ visible, onDismiss }: CelebrationOverlayPro
     >
       <div className="text-center px-8">
         <div className="animate-celebration-scale-in">
-          <p className="text-[32px] mb-3">&#127775;</p>
+          <p className="text-[32px] mb-3">{emoji}</p>
           <p className="text-[16px] font-semibold text-white/90 tracking-wide leading-relaxed">
-            One week of fasting!
+            {title}
           </p>
           <p className="text-[11px] text-emerald-400/70 mt-2 tracking-[0.15em] uppercase">
-            Keep going strong
+            {subtitle}
           </p>
         </div>
       </div>

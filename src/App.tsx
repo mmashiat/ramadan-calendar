@@ -47,8 +47,8 @@ function App() {
     setTotalFasted(total);
   }, []);
 
-  // 7-day streak celebration
-  const { animatedProgress, showCongrats, isCelebrating, triggerCelebration } = useCelebration();
+  // Celebration system (fasted confirmation + streak milestones)
+  const { animatedProgress, showCongrats, congratsMessage, isCelebrating, triggerCelebration } = useCelebration();
 
   // Display progress: celebration > scrub > real-time
   const displayProgress = animatedProgress ?? scrubProgress ?? dayCycle.dayProgress;
@@ -162,6 +162,9 @@ function App() {
         <CelebrationOverlay
           visible={showCongrats}
           onDismiss={() => {}}
+          emoji={congratsMessage?.emoji}
+          title={congratsMessage?.title}
+          subtitle={congratsMessage?.subtitle}
         />
       </SkyCard>
 
