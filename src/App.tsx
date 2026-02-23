@@ -93,14 +93,16 @@ function App() {
             )}
             <RamadanGrid dayCycle={dayCycle} onCelebrate={triggerCelebration} onStreakChange={setCurrentStreak} />
 
-            {/* Staging: all 3 streak soul variants for comparison */}
-            <div className="flex justify-center gap-6 mt-4 mb-2">
-              {(['tree', 'moon', 'lantern'] as const).map(variant => (
-                <div key={variant} className="flex flex-col items-center gap-1">
-                  <StreakSoul streak={currentStreak} variant={variant} />
-                  <span className="text-[9px] text-white/25 capitalize">{variant}</span>
-                </div>
-              ))}
+            {/* Staging: moon + tree side by side for comparison */}
+            <div className="flex justify-center items-end gap-8 mt-4 mb-2">
+              <div className="flex flex-col items-center gap-1">
+                <StreakSoul streak={currentStreak} ramadanDay={today} variant="moon" />
+                <span className="text-[9px] text-white/20">Moon</span>
+              </div>
+              <div className="flex flex-col items-center gap-1">
+                <StreakSoul streak={currentStreak} ramadanDay={today} variant="tree" />
+                <span className="text-[9px] text-white/20">Tree</span>
+              </div>
             </div>
             {currentStreak > 0 && (
               <p className="text-center text-[10px] text-white/20 mb-2">
