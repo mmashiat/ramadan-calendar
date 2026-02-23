@@ -1,11 +1,11 @@
 import { Redis } from '@upstash/redis';
-import { Client } from '@upstash/qstash';
 import { createHash } from 'crypto';
 
 // Ramadan 2026: Feb 18 - Mar 19
 const RAMADAN_START = '2026-02-18';
 const RAMADAN_END = '2026-03-19';
 const LEAD_MINUTES = 10;
+const QSTASH_URL = 'https://qstash-us-east-1.upstash.io';
 
 export function hashEndpoint(endpoint: string): string {
   return createHash('sha256').update(endpoint).digest('hex').slice(0, 16);
@@ -18,13 +18,9 @@ export function prayerTimeToUnix(
 ): number {
   const [hours, minutes] = timeStr.split(':').map(Number);
 
-  // Build a date string in the target timezone and find its UTC equivalent
   // dateStr is "DD-MM-YYYY" from Aladhan
   const [day, month, year] = dateStr.split('-').map(Number);
 
-  // Create a Date object for the given local time
-  // We use a binary-search approach with Intl to find the UTC timestamp
-  // that corresponds to the desired local time in the given timezone
   const formatter = new Intl.DateTimeFormat('en-US', {
     timeZone: timezone,
     year: 'numeric',
@@ -68,10 +64,30 @@ function isWithinRamadan(dateStr: string): boolean {
   return date >= RAMADAN_START && date <= RAMADAN_END;
 }
 
+async function qstashPublish(
+  destinationUrl: string,
+  body: Record<string, unknown>,
+  notBefore: number,
+): Promise<void> {
+  const token = process.env.QSTASH_TOKEN!;
+  const res = await fetch(`${QSTASH_URL}/v2/publish/${destinationUrl}`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      'Upstash-Not-Before': String(notBefore),
+    },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`QStash publish failed (${res.status}): ${text}`);
+  }
+}
+
 export async function scheduleNotificationsForSubscriber(
   redisKey: string,
   data: { lat: number; lng: number },
-  qstash: Client,
   targetDate: Date,
 ): Promise<void> {
   const day = targetDate.getDate();
@@ -100,23 +116,21 @@ export async function scheduleNotificationsForSubscriber(
       ? `https://${process.env.VERCEL_URL}`
       : 'http://localhost:3000';
 
+  const sendUrl = `${appUrl}/api/send-notification`;
+
   // Schedule imsak notification (10 min before)
   const imsakTime = timings.Imsak?.replace(/\s*\(.*\)/, '').trim();
   if (imsakTime) {
     const imsakUnix = prayerTimeToUnix(imsakTime, dateStr, timezone) - LEAD_MINUTES * 60;
     if (imsakUnix > now) {
-      await qstash.publishJSON({
-        url: `${appUrl}/api/send-notification`,
-        body: {
-          redisKey,
-          type: 'imsak',
-          date: dateLabel,
-          title: 'Imsak in 10 minutes',
-          body: 'Time to prepare for suhoor',
-          tag: `imsak-${dateLabel}`,
-        },
-        notBefore: imsakUnix,
-      });
+      await qstashPublish(sendUrl, {
+        redisKey,
+        type: 'imsak',
+        date: dateLabel,
+        title: 'Imsak in 10 minutes',
+        body: 'Time to prepare for suhoor',
+        tag: `imsak-${dateLabel}`,
+      }, imsakUnix);
     }
   }
 
@@ -126,36 +140,28 @@ export async function scheduleNotificationsForSubscriber(
     const maghribUnix = prayerTimeToUnix(maghribTime, dateStr, timezone);
     const iftarAlertUnix = maghribUnix - LEAD_MINUTES * 60;
     if (iftarAlertUnix > now) {
-      await qstash.publishJSON({
-        url: `${appUrl}/api/send-notification`,
-        body: {
-          redisKey,
-          type: 'maghrib',
-          date: dateLabel,
-          title: 'Iftar in 10 minutes',
-          body: 'Almost time to break your fast',
-          tag: `iftar-${dateLabel}`,
-          chainNext: true,
-        },
-        notBefore: iftarAlertUnix,
-      });
+      await qstashPublish(sendUrl, {
+        redisKey,
+        type: 'maghrib',
+        date: dateLabel,
+        title: 'Iftar in 10 minutes',
+        body: 'Almost time to break your fast',
+        tag: `iftar-${dateLabel}`,
+        chainNext: true,
+      }, iftarAlertUnix);
     }
 
     // Schedule fasting log reminder (1 hour after maghrib)
     const logReminderUnix = maghribUnix + 60 * 60;
     if (logReminderUnix > now) {
-      await qstash.publishJSON({
-        url: `${appUrl}/api/send-notification`,
-        body: {
-          redisKey,
-          type: 'log-reminder',
-          date: dateLabel,
-          title: 'Log your fast',
-          body: 'Did you complete your fast today? Tap to record it.',
-          tag: `log-${dateLabel}`,
-        },
-        notBefore: logReminderUnix,
-      });
+      await qstashPublish(sendUrl, {
+        redisKey,
+        type: 'log-reminder',
+        date: dateLabel,
+        title: 'Log your fast',
+        body: 'Did you complete your fast today? Tap to record it.',
+        tag: `log-${dateLabel}`,
+      }, logReminderUnix);
     }
   }
 }
@@ -165,8 +171,4 @@ export function getRedis(): Redis {
     url: process.env.UPSTASH_REDIS_REST_URL!,
     token: process.env.UPSTASH_REDIS_REST_TOKEN!,
   });
-}
-
-export function getQStash(): Client {
-  return new Client({ token: process.env.QSTASH_TOKEN! });
 }

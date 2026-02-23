@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { Receiver } from '@upstash/qstash';
 import webpush from 'web-push';
-import { scheduleNotificationsForSubscriber, getRedis, getQStash } from './_lib/schedule.js';
+import { scheduleNotificationsForSubscriber, getRedis } from './_lib/schedule.js';
 
 const receiver = new Receiver({
   currentSigningKey: process.env.QSTASH_CURRENT_SIGNING_KEY!,
@@ -83,8 +83,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     try {
-      const qstash = getQStash();
-      await scheduleNotificationsForSubscriber(redisKey, { lat, lng }, qstash, tomorrow);
+      await scheduleNotificationsForSubscriber(redisKey, { lat, lng }, tomorrow);
     } catch (err) {
       console.error('Failed to chain next day schedule:', err);
     }

@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { hashEndpoint, scheduleNotificationsForSubscriber, getRedis, getQStash } from './_lib/schedule.js';
+import { hashEndpoint, scheduleNotificationsForSubscriber, getRedis } from './_lib/schedule.js';
 
 const TTL_SECONDS = 35 * 24 * 60 * 60; // 35 days
 
@@ -21,9 +21,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     await redis.sadd('push:subscribers', key);
 
     // Schedule today's notifications
-    const qstash = getQStash();
     try {
-      await scheduleNotificationsForSubscriber(key, { lat, lng }, qstash, new Date());
+      await scheduleNotificationsForSubscriber(key, { lat, lng }, new Date());
     } catch {
       // Non-fatal: subscription is stored, scheduling can be retried by cron
     }

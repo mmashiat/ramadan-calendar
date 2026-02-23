@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { scheduleNotificationsForSubscriber, getRedis, getQStash } from '../_lib/schedule.js';
+import { scheduleNotificationsForSubscriber, getRedis } from '../_lib/schedule.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Verify cron secret
@@ -9,7 +9,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const redis = getRedis();
-  const qstash = getQStash();
   const today = new Date();
 
   // Get all subscriber keys
@@ -32,7 +31,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const { lat, lng } = data as { lat: number; lng: number };
 
     try {
-      await scheduleNotificationsForSubscriber(key, { lat, lng }, qstash, today);
+      await scheduleNotificationsForSubscriber(key, { lat, lng }, today);
       scheduled++;
     } catch (err) {
       console.error(`Failed to schedule for ${key}:`, err);
