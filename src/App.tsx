@@ -40,12 +40,10 @@ function App() {
     setScrubProgress(progress);
   }, []);
 
-  // Streak tracking for soul visualization
-  const [currentStreak, setCurrentStreak] = useState(0);
+  // Track total fasted for moon visualization
   const [totalFasted, setTotalFasted] = useState(0);
 
-  const handleStreakChange = useCallback((streak: number, total: number) => {
-    setCurrentStreak(streak);
+  const handleStreakChange = useCallback((_streak: number, total: number) => {
     setTotalFasted(total);
   }, []);
 
@@ -99,22 +97,9 @@ function App() {
             )}
             <RamadanGrid dayCycle={dayCycle} onCelebrate={triggerCelebration} onStreakChange={handleStreakChange} />
 
-            {/* Staging: moon + tree side by side for comparison */}
-            <div className="flex justify-center items-end gap-8 mt-4 mb-2">
-              <div className="flex flex-col items-center gap-1">
-                <StreakSoul streak={currentStreak} ramadanDay={today} variant="moon" allComplete={totalFasted >= 30} />
-                <span className="text-[9px] text-white/20">Moon</span>
-              </div>
-              <div className="flex flex-col items-center gap-1">
-                <StreakSoul streak={currentStreak} ramadanDay={today} variant="tree" />
-                <span className="text-[9px] text-white/20">Tree</span>
-              </div>
+            <div className="flex justify-center mt-4 mb-2">
+              <StreakSoul totalFasted={totalFasted} ramadanDay={today} allComplete={totalFasted >= 30} />
             </div>
-            {currentStreak > 0 && (
-              <p className="text-center text-[10px] text-white/20 mb-2">
-                {currentStreak} day streak
-              </p>
-            )}
 
             <EidCountdown onChangeLocation={resetLocation} />
 
