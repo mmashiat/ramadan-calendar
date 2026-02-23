@@ -51,10 +51,8 @@ export function DayCircle({
 
   const shouldPulse = isToday && sunProgress === 2 && !fastingStatus;
 
-  const isInteractive = !isFuture && (
-    isPast ||
-    (isToday && (sunProgress === 2 || sunProgress === 3))
-  );
+  // Staging: all days tappable for testing animations
+  const isInteractive = true;
 
   const boxShadow = useMemo(() => {
     if (isInStreak && fastingStatus === 'fasted') {
