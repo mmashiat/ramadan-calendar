@@ -15,6 +15,7 @@ interface CelebrationState {
   congratsMessage: CelebrationMessage | null;
   isCelebrating: boolean;
   triggerCelebration: (message?: CelebrationMessage) => void;
+  showCongratsOnly: (message: CelebrationMessage) => void;
 }
 
 const DEFAULT_MESSAGE: CelebrationMessage = {
@@ -43,18 +44,37 @@ export function useCelebration(): CelebrationState {
     congratsTimerRef.current = setTimeout(() => {
       setShowCongrats(false);
       setCongratsMessage(null);
-      // Show next queued message if any
       if (queueRef.current.length > 0) {
         setTimeout(() => showNext(), 300);
       }
     }, CONGRATS_DURATION);
   }, []);
 
+  // Text overlay only — no sun arc animation
+  const showCongratsOnly = useCallback((message: CelebrationMessage) => {
+    if (isCelebrating || showCongrats) {
+      queueRef.current.push(message);
+      return;
+    }
+
+    setCongratsMessage(message);
+    setShowCongrats(true);
+
+    if (congratsTimerRef.current) clearTimeout(congratsTimerRef.current);
+    congratsTimerRef.current = setTimeout(() => {
+      setShowCongrats(false);
+      setCongratsMessage(null);
+      if (queueRef.current.length > 0) {
+        setTimeout(() => showNext(), 300);
+      }
+    }, CONGRATS_DURATION);
+  }, [isCelebrating, showCongrats, showNext]);
+
+  // Full celebration with sun arc animation + text
   const triggerCelebration = useCallback((message?: CelebrationMessage) => {
     const msg = message ?? DEFAULT_MESSAGE;
 
     if (isCelebrating || showCongrats) {
-      // Queue it
       queueRef.current.push(msg);
       return;
     }
@@ -84,7 +104,6 @@ export function useCelebration(): CelebrationState {
         congratsTimerRef.current = setTimeout(() => {
           setShowCongrats(false);
           setCongratsMessage(null);
-          // Show next queued message
           if (queueRef.current.length > 0) {
             setTimeout(() => showNext(), 300);
           }
@@ -99,5 +118,5 @@ export function useCelebration(): CelebrationState {
     };
   }, [isCelebrating, showNext]);
 
-  return { animatedProgress, showCongrats, congratsMessage, isCelebrating, triggerCelebration };
+  return { animatedProgress, showCongrats, congratsMessage, isCelebrating, triggerCelebration, showCongratsOnly };
 }

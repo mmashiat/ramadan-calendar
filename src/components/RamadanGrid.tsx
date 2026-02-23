@@ -9,6 +9,7 @@ import type { CelebrationMessage } from '../hooks/useCelebration';
 interface RamadanGridProps {
   dayCycle: DayCycleInfo;
   onCelebrate?: (message?: CelebrationMessage) => void;
+  onFastedToast?: (message: CelebrationMessage) => void;
   onStreakChange?: (streak: number, totalFasted: number) => void;
 }
 
@@ -54,7 +55,7 @@ function getMaxStreak(log: Record<number, FastingStatus>): number {
   return max;
 }
 
-export function RamadanGrid({ dayCycle, onCelebrate, onStreakChange }: RamadanGridProps) {
+export function RamadanGrid({ dayCycle, onCelebrate, onFastedToast, onStreakChange }: RamadanGridProps) {
   const today = getRamadanDay(new Date());
   const prevMaxStreakRef = useRef<number>(0);
 
@@ -77,32 +78,34 @@ export function RamadanGrid({ dayCycle, onCelebrate, onStreakChange }: RamadanGr
     if (promptDay === null) return;
     setFastingStatus(promptDay, status);
 
-    if (status === 'fasted' && onCelebrate) {
+    if (status === 'fasted') {
       // Haptic feedback
       if (navigator.vibrate) navigator.vibrate(50);
 
-      // Show fasted celebration overlay
-      setTimeout(() => {
-        onCelebrate({
-          emoji: '\u{2728}',
-          title: 'Amazing, you did it!',
-          subtitle: 'Another one in the books',
-        });
-      }, 200);
+      // Show text-only fasted overlay (no arc animation)
+      if (onFastedToast) {
+        setTimeout(() => {
+          onFastedToast({
+            emoji: '\u{2728}',
+            title: 'Amazing, you did it!',
+            subtitle: 'Another one in the books',
+          });
+        }, 200);
+      }
     }
 
     setFastingLog(prev => {
       const next = { ...prev, [promptDay]: status };
 
-      // Check streak milestones: 7, 14, 21
+      // Check streak milestones: 7, 14, 21 — these get the full arc animation
       if (status === 'fasted' && onCelebrate) {
         const prevMax = prevMaxStreakRef.current;
         const newMax = getMaxStreak(next);
 
         const milestones: { threshold: number; message: CelebrationMessage }[] = [
-          { threshold: 7, message: { emoji: '\u{1F31F}', title: 'One week of fasting!', subtitle: 'Keep going strong' } },
-          { threshold: 14, message: { emoji: '\u{1F525}', title: 'Two weeks of fasting!', subtitle: 'You\'re unstoppable' } },
-          { threshold: 21, message: { emoji: '\u{1F4AB}', title: 'Three weeks of fasting!', subtitle: 'Almost there' } },
+          { threshold: 7, message: { emoji: '\u{1F31F}', title: 'Weekly streak completed!', subtitle: "Let's go!" } },
+          { threshold: 14, message: { emoji: '\u{1F525}', title: 'Two week streak!', subtitle: "You're unstoppable" } },
+          { threshold: 21, message: { emoji: '\u{1F4AB}', title: 'Three week streak!', subtitle: 'Almost there' } },
         ];
 
         for (const { threshold, message } of milestones) {

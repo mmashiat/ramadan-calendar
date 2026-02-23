@@ -48,7 +48,7 @@ function App() {
   }, []);
 
   // Celebration system (fasted confirmation + streak milestones)
-  const { animatedProgress, showCongrats, congratsMessage, isCelebrating, triggerCelebration } = useCelebration();
+  const { animatedProgress, showCongrats, congratsMessage, isCelebrating, triggerCelebration, showCongratsOnly } = useCelebration();
 
   // Display progress: celebration > scrub > real-time
   const displayProgress = animatedProgress ?? scrubProgress ?? dayCycle.dayProgress;
@@ -95,7 +95,7 @@ function App() {
                 onScrub={handleScrub}
               />
             )}
-            <RamadanGrid dayCycle={dayCycle} onCelebrate={triggerCelebration} onStreakChange={handleStreakChange} />
+            <RamadanGrid dayCycle={dayCycle} onCelebrate={triggerCelebration} onFastedToast={showCongratsOnly} onStreakChange={handleStreakChange} />
 
             <div className="flex justify-center mt-4 mb-2">
               <StreakSoul totalFasted={totalFasted} ramadanDay={today} allComplete={totalFasted >= 30} />
