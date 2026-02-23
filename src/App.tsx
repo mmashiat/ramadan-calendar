@@ -13,6 +13,7 @@ import { EidCountdown } from './components/EidCountdown';
 import { CelebrationOverlay } from './components/CelebrationOverlay';
 import { LocationPrompt } from './components/LocationPrompt';
 import { InstallPrompt } from './components/InstallPrompt';
+import { StreakSoul } from './components/StreakSoul';
 
 function App() {
   const { lat, lng, loading: locLoading, error: locError, needsPermission, requestLocation, resetLocation } = useLocation();
@@ -38,6 +39,9 @@ function App() {
   const handleScrub = useCallback((progress: number | null) => {
     setScrubProgress(progress);
   }, []);
+
+  // Streak tracking for soul visualization
+  const [currentStreak, setCurrentStreak] = useState(0);
 
   // 7-day streak celebration
   const { animatedProgress, showCongrats, isCelebrating, triggerCelebration } = useCelebration();
@@ -87,7 +91,23 @@ function App() {
                 onScrub={handleScrub}
               />
             )}
-            <RamadanGrid dayCycle={dayCycle} onCelebrate={triggerCelebration} />
+            <RamadanGrid dayCycle={dayCycle} onCelebrate={triggerCelebration} onStreakChange={setCurrentStreak} />
+
+            {/* Staging: all 3 streak soul variants for comparison */}
+            <div className="flex justify-center gap-6 mt-4 mb-2">
+              {(['tree', 'moon', 'lantern'] as const).map(variant => (
+                <div key={variant} className="flex flex-col items-center gap-1">
+                  <StreakSoul streak={currentStreak} variant={variant} />
+                  <span className="text-[9px] text-white/25 capitalize">{variant}</span>
+                </div>
+              ))}
+            </div>
+            {currentStreak > 0 && (
+              <p className="text-center text-[10px] text-white/20 mb-2">
+                {currentStreak} day streak
+              </p>
+            )}
+
             <EidCountdown onChangeLocation={resetLocation} />
 
             {notifSupported && (
