@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import confetti from 'canvas-confetti';
 import { useLocation } from './hooks/useLocation';
 import { usePrayerTimes } from './hooks/usePrayerTimes';
 import { useSunCycle } from './hooks/useSunCycle';
@@ -50,6 +51,45 @@ function App() {
   // Celebration system (fasted confirmation + streak milestones)
   const { animatedProgress, showCongrats, congratsMessage, isCelebrating, triggerCelebration, showCongratsOnly } = useCelebration();
 
+  // Eid Mubarak — gold confetti shower when all 30 complete
+  const handleAllComplete = useCallback(() => {
+    // Fire gold confetti from both sides
+    const duration = 4000;
+    const end = Date.now() + duration;
+    const gold = ['#FFD700', '#FFA500', '#FBBF24', '#F59E0B', '#ffffff'];
+
+    const frame = () => {
+      confetti({
+        particleCount: 3,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0, y: 0.6 },
+        colors: gold,
+        zIndex: 9999,
+      });
+      confetti({
+        particleCount: 3,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1, y: 0.6 },
+        colors: gold,
+        zIndex: 9999,
+      });
+
+      if (Date.now() < end) {
+        requestAnimationFrame(frame);
+      }
+    };
+    frame();
+
+    // Show Eid Mubarak text
+    showCongratsOnly({
+      emoji: '\u{1F54C}',
+      title: 'Eid Mubarak!',
+      subtitle: 'You completed all 30 days',
+    });
+  }, [showCongratsOnly]);
+
   // Display progress: celebration > scrub > real-time
   const displayProgress = animatedProgress ?? scrubProgress ?? dayCycle.dayProgress;
   const isScrubbing = scrubProgress !== null || isCelebrating;
@@ -95,7 +135,7 @@ function App() {
                 onScrub={handleScrub}
               />
             )}
-            <RamadanGrid dayCycle={dayCycle} onCelebrate={triggerCelebration} onFastedToast={showCongratsOnly} onStreakChange={handleStreakChange} />
+            <RamadanGrid dayCycle={dayCycle} onCelebrate={triggerCelebration} onFastedToast={showCongratsOnly} onAllComplete={handleAllComplete} onStreakChange={handleStreakChange} />
 
             <div className="flex justify-center mt-4 mb-2">
               <StreakSoul totalFasted={totalFasted} ramadanDay={today} allComplete={totalFasted >= 30} />

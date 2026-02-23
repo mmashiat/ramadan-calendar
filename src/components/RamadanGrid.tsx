@@ -10,6 +10,7 @@ interface RamadanGridProps {
   dayCycle: DayCycleInfo;
   onCelebrate?: (message?: CelebrationMessage) => void;
   onFastedToast?: (message: CelebrationMessage) => void;
+  onAllComplete?: () => void;
   onStreakChange?: (streak: number, totalFasted: number) => void;
 }
 
@@ -55,7 +56,7 @@ function getMaxStreak(log: Record<number, FastingStatus>): number {
   return max;
 }
 
-export function RamadanGrid({ dayCycle, onCelebrate, onFastedToast, onStreakChange }: RamadanGridProps) {
+export function RamadanGrid({ dayCycle, onCelebrate, onFastedToast, onAllComplete, onStreakChange }: RamadanGridProps) {
   const today = getRamadanDay(new Date());
   const prevMaxStreakRef = useRef<number>(0);
 
@@ -116,6 +117,17 @@ export function RamadanGrid({ dayCycle, onCelebrate, onFastedToast, onStreakChan
         }
 
         prevMaxStreakRef.current = newMax;
+      }
+
+      // Check if all 30 days are fasted
+      if (status === 'fasted' && onAllComplete) {
+        let allFasted = true;
+        for (let d = 1; d <= RAMADAN_DAYS; d++) {
+          if (next[d] !== 'fasted') { allFasted = false; break; }
+        }
+        if (allFasted) {
+          setTimeout(() => onAllComplete(), 4500);
+        }
       }
 
       return next;
