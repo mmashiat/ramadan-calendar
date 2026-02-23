@@ -8,7 +8,7 @@ import type { DayCycleInfo } from '../hooks/useSunCycle';
 interface RamadanGridProps {
   dayCycle: DayCycleInfo;
   onCelebrate?: () => void;
-  onStreakChange?: (streak: number) => void;
+  onStreakChange?: (streak: number, totalFasted: number) => void;
 }
 
 function computeStreaks(log: Record<number, FastingStatus>) {
@@ -117,11 +117,18 @@ export function RamadanGrid({ dayCycle, onCelebrate, onStreakChange }: RamadanGr
 
   const { streaks } = useMemo(() => computeStreaks(fastingLog), [fastingLog]);
 
-  // Report current streak to parent
+  // Report current streak and total fasted to parent
   const currentStreak = useMemo(() => getMaxStreak(fastingLog), [fastingLog]);
+  const totalFasted = useMemo(() => {
+    let count = 0;
+    for (let d = 1; d <= RAMADAN_DAYS; d++) {
+      if (fastingLog[d] === 'fasted') count++;
+    }
+    return count;
+  }, [fastingLog]);
   useEffect(() => {
-    onStreakChange?.(currentStreak);
-  }, [currentStreak, onStreakChange]);
+    onStreakChange?.(currentStreak, totalFasted);
+  }, [currentStreak, totalFasted, onStreakChange]);
 
   // Map dayCycle to the old sunProgress values that DayCircle expects
   // isDay=true → 0-1, post-maghrib → 2, pre-fajr → -1
